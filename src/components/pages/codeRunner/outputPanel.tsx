@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import {
   Copy, Eraser, Maximize2, Minimize2, Terminal,
 } from "lucide-react";
-import type { OutLine } from "@/lib/data";
+import type { OutLine } from "@/lib/utils";
 
 type Props = {
   mode: "none" | "browser" | "server" | "web";
   lines: OutLine[];
+  running: boolean;
   execMs: number | null;
   previewSrc: string;
   value: string;
@@ -19,7 +20,7 @@ type Props = {
 };
 
 export const OutputPanel = forwardRef<HTMLIFrameElement, Props>(function OutputPanel(
-  { mode, lines, execMs, previewSrc, value, placeholder, isFull, onToggleFull, onClear, onCopyOutput },
+  { mode, lines, running, execMs, previewSrc, value, placeholder, isFull, onToggleFull, onClear, onCopyOutput },
   iframeRef,
 ) {
   const previewLabel = mode === "web" ? "Live Preview" : "Console";
@@ -62,7 +63,9 @@ export const OutputPanel = forwardRef<HTMLIFrameElement, Props>(function OutputP
         <>
           <div className="flex-1 overflow-auto bg-background text-foreground font-mono text-[13px] leading-relaxed">
             {lines.length === 0 ? (
-              <pre className="p-4 text-muted-foreground whitespace-pre-wrap">{placeholder}</pre>
+              <pre className="p-4 text-muted-foreground whitespace-pre-wrap">
+                {running ? "Running code… this can take a few seconds for server languages." : placeholder}
+              </pre>
             ) : (
               <pre className="p-4 whitespace-pre-wrap">
                 {lines.map((l) => l.text).join("\n")}

@@ -3,17 +3,17 @@ import { type OnMount } from "@monaco-editor/react";
 import {
   ResizablePanelGroup, ResizablePanel, ResizableHandle,
 } from "@/components/ui/resizable";
+import { useIsMobile } from "@/hooks/useMobile";
 import {
   LANG_BY_ID, runOnPiston,
   getPistonEndpoint, setPistonEndpoint,
 } from "@/lib/languages";
 import { toast } from "react-hot-toast";
-import { useIsMobile } from "@/hooks/useMobile";
-import { buildJsSandbox, isRunnerNoise } from "@/lib/utils";
+import type { OutLine } from "@/lib/data";
+import { buildJsSandbox, isRunnerNoise, transformTypeScript } from "@/lib/utils";
 import { EditorPanel } from "./editorPanel";
 import { OutputPanel } from "./outputPanel";
 import { RunnerToolbar } from "./runnerToolbar";
-import type { OutLine } from "@/lib/data";
 
 type Props = {
   value: string;
@@ -108,10 +108,15 @@ export function CodeRunner({
     }
     if (mode === "browser") {
       setRunning(true);
-      const html = buildJsSandbox(codeRef.current, language === "typescript");
-      const iframe = iframeRef.current;
-      if (iframe) iframe.srcdoc = html;
-      setTimeout(() => setRunning(false), 8000);
+      try {
+        const source = language === "typescript" ? await transformTypeScript(codeRef.current) : codeRef.current;
+        const iframe = iframeRef.current;
+        if (iframe) iframe.srcdoc = buildJsSandbox(source);
+        setTimeout(() => setRunning(false), 8000);
+      } catch (e: any) {
+        append({ level: "error", text: e?.message ?? String(e) });
+        setRunning(false);
+      }
       return;
     }
     if (mode === "server") {
@@ -198,6 +203,7 @@ export function CodeRunner({
       ref={iframeRef}
       mode={mode}
       lines={lines}
+        running={running}
       execMs={execMs}
       previewSrc={previewSrc}
       value={value}

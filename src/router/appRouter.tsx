@@ -1,6 +1,8 @@
 import RootLayout from "@/layout/rootLayout";
+import AuthPage from "@/pages/authPage";
 import HomePage from "@/pages/homePage";
 import JsonPage from "@/pages/jsonPage";
+import PenPage from "@/pages/penPage";
 import PlaygroundPage from "@/pages/playgroundPage";
 import { createBrowserRouter } from "react-router-dom";
 
@@ -20,10 +22,14 @@ const router = createBrowserRouter([
         path: "/json",
         element: <JsonPage />,
       },
-      //   {
-      //     path: "/auth",
-      //     element: <AuthPage />,
-      //   },
+      {
+        path: "/pen",
+        element: <PenPage />,
+      },
+      {
+        path: "/auth",
+        element: <AuthPage />,
+      },
     ],
   },
 ]);
