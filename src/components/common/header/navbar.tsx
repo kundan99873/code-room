@@ -1,9 +1,13 @@
-import { Code2 } from "lucide-react";
+import { Code2, LogOut } from "lucide-react";
 import { ThemeToggle } from "./themeToggle";
 import { Link } from "react-router-dom";
 import CustomNavLink from "./customNavLink";
+import { useAuth } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 
 export function Navbar() {
+  const { user, logout } = useAuth();
+
   return (
     <header className="sticky top-3 z-30 px-3 sm:px-4">
       <div className="mx-auto max-w-7xl">
@@ -25,37 +29,39 @@ export function Navbar() {
             <span className="hidden sm:inline">
               <CustomNavLink to="/json">JSON Tools</CustomNavLink>
             </span>
-            {/* {user && <NavLink to="/dashboard">Rooms</NavLink>} */}
+            {user && <CustomNavLink to="/dashboard">Rooms</CustomNavLink>}
           </nav>
 
           <div className="flex items-center gap-1">
-            {/* {user ? (
+            {user ? (
               <>
-                <span className="text-xs text-muted-foreground hidden md:inline max-w-[160px] truncate">
+                <span className="text-xs text-muted-foreground hidden md:inline max-w-[160px] truncate mr-2">
                   {user.email}
                 </span>
                 <ThemeToggle />
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="rounded-full"
+                  className="rounded-full cursor-pointer hover:bg-accent"
                   aria-label="Sign out"
-                  onClick={async () => { await signOut(); nav({ to: "/" }); }}
+                  onClick={async () => {
+                    await logout();
+                  }}
                 >
                   <LogOut className="h-4 w-4" />
                 </Button>
               </>
-            ) : ( */}
-            <>
-              <ThemeToggle />
-              <Link
-                to="/auth"
-                className="ml-1 inline-flex items-center rounded-full bg-primary text-primary-foreground text-sm font-medium px-4 py-1.5 shadow-[0_4px_14px_-4px_color-mix(in_oklab,var(--primary)_60%,transparent)] hover:opacity-95 transition"
-              >
-                Sign in
-              </Link>
-            </>
-            {/* )} */}
+            ) : (
+              <>
+                <ThemeToggle />
+                <Link
+                  to="/auth"
+                  className="ml-1 inline-flex items-center rounded-full bg-primary text-primary-foreground text-sm font-medium px-4 py-1.5 shadow-[0_4px_14px_-4px_color-mix(in_oklab,var(--primary)_60%,transparent)] hover:opacity-95 transition"
+                >
+                  Sign in
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

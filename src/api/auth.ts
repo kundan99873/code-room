@@ -1,0 +1,60 @@
+export interface User {
+  id: string;
+  _id?: string;
+  name: string;
+  email: string;
+  role: "user" | "admin";
+  avatar?: {
+    publicId: string;
+    url: string;
+  };
+}
+
+export const fetchCurrentUser = async (): Promise<User> => {
+  const res = await fetch("/api/auth/me");
+  if (!res.ok) {
+    throw new Error("Not authenticated");
+  }
+  const result = await res.json();
+  const data = result.data;
+  if (data && data._id) {
+    data.id = data._id;
+  }
+  return data;
+};
+
+export const loginRequest = async (credentials: any) => {
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(credentials),
+  });
+  const result = await res.json();
+  if (!res.ok) {
+    throw new Error(result.message || "Failed to login");
+  }
+  return result;
+};
+
+export const registerRequest = async (userData: any) => {
+  const res = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(userData),
+  });
+  const result = await res.json();
+  if (!res.ok) {
+    throw new Error(result.message || "Failed to register");
+  }
+  return result;
+};
+
+export const logoutRequest = async () => {
+  const res = await fetch("/api/auth/logout", {
+    method: "POST",
+  });
+  if (!res.ok) {
+    const result = await res.json();
+    throw new Error(result.message || "Failed to logout");
+  }
+};

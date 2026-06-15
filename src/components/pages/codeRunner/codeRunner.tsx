@@ -23,11 +23,14 @@ type Props = {
   onEditorMount?: OnMount;
   header?: React.ReactNode;
   heightClass?: string;
+  allFiles?: { name: string; content: string }[];
+  activeFileName?: string;
 };
 
 export function CodeRunner({
   value, language, onChange, onLanguageChange, onEditorMount,
   header, heightClass = "h-[calc(100vh-3.5rem)]",
+  allFiles = [], activeFileName = "",
 }: Props) {
   const isMobile = useIsMobile();
   const [lines, setLines] = useState<OutLine[]>([]);
@@ -122,7 +125,7 @@ export function CodeRunner({
     if (mode === "server") {
       setRunning(true);
       try {
-        const r = await runOnPiston(language, codeRef.current);
+        const r = await runOnPiston(language, codeRef.current, allFiles, activeFileName);
         setExecMs(r.timeMs ?? Math.round(performance.now() - startedAt.current));
         if (r.stdout) append({ level: "log", text: r.stdout.replace(/\n+$/, "") });
         if (r.stderr) append({ level: "error", text: r.stderr.replace(/\n+$/, "") });

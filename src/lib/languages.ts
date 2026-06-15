@@ -147,8 +147,24 @@ async function getPyodideRuntime() {
 async function runPythonInBrowser(
   source: string,
   stdin: string,
+  allFiles: { name: string; content: string }[] = [],
+  activeFileName = "",
 ): Promise<RunResult> {
   const pyodide = await getPyodideRuntime();
+  
+  // Write other workspace files to Pyodide virtual filesystem
+  if (allFiles.length > 0) {
+    allFiles.forEach((f) => {
+      if (f.name !== activeFileName) {
+        try {
+          pyodide.FS.writeFile(f.name, f.content);
+        } catch (fsErr) {
+          console.error("Pyodide FS error writing file:", f.name, fsErr);
+        }
+      }
+    });
+  }
+
   const stdout: string[] = [];
   const stderr: string[] = [];
   const inputLines = stdin.length
@@ -165,7 +181,7 @@ async function runPythonInBrowser(
   });
 
   try {
-    await pyodide.runPythonAsync(source, { filename: "main.py" });
+    await pyodide.runPythonAsync(source, { filename: activeFileName || "main.py" });
     const out = stdout.join("\n");
     const err = stderr.join("\n");
     return {
@@ -232,16 +248,26 @@ async function runOnPistonAt(
   langId: string,
   source: string,
   stdin: string,
+  allFiles: { name: string; content: string }[] = [],
+  activeFileName = "",
 ): Promise<RunResult | null> {
   const lang = LANG_BY_ID[langId];
   if (!lang?.piston) return null;
+
+  const filesPayload = allFiles.length > 0 && activeFileName
+    ? [
+        { name: activeFileName, content: source },
+        ...allFiles.filter((f) => f.name !== activeFileName).map((f) => ({ name: f.name, content: f.content }))
+      ]
+    : [{ name: `main.${lang.ext}`, content: source }];
+
   const res = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       language: lang.piston,
       version: lang.version ?? "*",
-      files: [{ name: `main.${lang.ext}`, content: source }],
+      files: filesPayload,
       stdin,
     }),
   });
@@ -271,14 +297,25 @@ async function runOnWandbox(
   langId: string,
   source: string,
   stdin: string,
+  allFiles: { name: string; content: string }[] = [],
+  activeFileName = "",
 ): Promise<RunResult | null> {
   const lang = LANG_BY_ID[langId];
   if (!lang?.wandbox) return null;
   try {
+    const codes = allFiles.length > 0 && activeFileName
+      ? allFiles.filter((f) => f.name !== activeFileName).map((f) => ({ file: f.name, code: f.content }))
+      : [];
+
     const res = await fetch("https://wandbox.org/api/compile.json", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ compiler: lang.wandbox, code: source, stdin }),
+      body: JSON.stringify({
+        compiler: lang.wandbox,
+        code: source,
+        codes,
+        stdin,
+      }),
     });
     if (!res.ok) {
       const txt = await res.text();
@@ -390,6 +427,8 @@ async function runOnCodex(
 export async function runOnPiston(
   langId: string,
   source: string,
+  allFiles: { name: string; content: string }[] = [],
+  activeFileName = "",
   stdin = "",
 ): Promise<RunResult> {
   const lang = LANG_BY_ID[langId];
@@ -406,7 +445,7 @@ export async function runOnPiston(
   try {
     // Python runs locally through Pyodide.
     if (langId === "python") {
-      const py = await runPythonInBrowser(source, stdin);
+      const py = await runPythonInBrowser(source, stdin, allFiles, activeFileName);
       return { ...py, timeMs: Math.round(performance.now() - t0) };
     }
 
@@ -419,14 +458,14 @@ export async function runOnPiston(
     // Prefer self-hosted Piston if the user configured one.
     const custom = getPistonEndpoint();
     if (custom) {
-      const piston = await runOnPistonAt(custom, langId, source, stdin);
+      const piston = await runOnPistonAt(custom, langId, source, stdin, allFiles, activeFileName);
       if (piston && (piston.ok || piston.stdout || piston.stderr)) {
         return { ...piston, timeMs: Math.round(performance.now() - t0) };
       }
     }
 
     // Primary public runner: Wandbox (Rust, Go, Java, C++, C#, Ruby, Bash, etc.).
-    const wb = await runOnWandbox(langId, source, stdin);
+    const wb = await runOnWandbox(langId, source, stdin, allFiles, activeFileName);
     if (wb && (wb.ok || wb.stdout || wb.stderr)) {
       return { ...wb, timeMs: Math.round(performance.now() - t0) };
     }

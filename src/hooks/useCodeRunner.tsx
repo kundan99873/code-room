@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { runOnPiston, getPistonEndpoint, LANG_BY_ID } from "@/lib/languages";
-import { buildJsSandbox, isRunnerNoise } from "@/lib/utils";
+import { buildJsSandbox, isRunnerNoise, transformTypeScript } from "@/lib/utils";
 import type { OutLine } from "@/lib/data";
 
 export function useCodeRunner({
@@ -71,7 +71,8 @@ export function useCodeRunner({
 
     if (mode === "browser") {
       setRunning(true);
-      const html = buildJsSandbox(codeRef.current, language === "typescript");
+      const source = language === "typescript" ? transformTypeScript(codeRef.current) : codeRef.current;
+      const html = buildJsSandbox(source);
       iframeRef.current!.srcdoc = html;
       setTimeout(() => setRunning(false), 8000);
       return;

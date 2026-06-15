@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Code2, Sparkles, Eye, EyeOff, Loader2 } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 
 export default function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -10,11 +11,27 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [busy, setBusy] = useState(false);
+
+  const { login, register, isLoggingIn, isRegistering } = useAuth();
+  const busy = isLoggingIn || isRegistering;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBusy(true);
+    if (mode === "signin") {
+      try {
+        await login({ email, password });
+      } catch (err) {
+        // errors handled by mutation toast
+      }
+    } else {
+      try {
+        await register({ name, email, password });
+        setMode("signin");
+        setPassword("");
+      } catch (err) {
+        // errors handled by mutation toast
+      }
+    }
   };
 
   const google = async () => {};
