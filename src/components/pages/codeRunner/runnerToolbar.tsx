@@ -35,10 +35,12 @@ export function RunnerToolbar({
         <div className="min-w-0">{header}</div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <LanguageSelect
-          value={language}
-          onChange={(v) => onLanguageChange?.(v)}
-        />
+        {onLanguageChange && (
+          <LanguageSelect
+            value={language}
+            onChange={(v) => onLanguageChange?.(v)}
+          />
+        )}
         <RunnerSettings endpoint={endpoint} onSave={onEndpointChange} />
         <Button
           size="sm"

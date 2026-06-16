@@ -19,11 +19,13 @@ type Props = {
   onFormat: () => void;
   onCopy: () => void;
   onDownload: () => void;
+  fileName?: string;
 };
 
 export function EditorPanel({
   value, language, monacoLang, ext, mode, mounted, isFull,
   onToggleFull, onChange, onEditorMount, onFormat, onCopy, onDownload,
+  fileName,
 }: Props) {
   const { resolved } = useTheme();
 
@@ -34,7 +36,7 @@ export function EditorPanel({
           <span className="h-2 w-2 rounded-full bg-rose-500/80" />
           <span className="h-2 w-2 rounded-full bg-amber-500/80" />
           <span className="h-2 w-2 rounded-full bg-emerald-500/80" />
-          <span className="ml-2 text-foreground">main.{ext}</span>
+          <span className="ml-2 text-foreground">{fileName || `main.${ext}`}</span>
           {mode === "server" && (language === "python" || language === "php") && (
             <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-emerald-500 font-sans">
               <Zap className="h-3 w-3" /> local runtime

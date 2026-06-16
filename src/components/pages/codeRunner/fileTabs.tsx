@@ -33,7 +33,6 @@ type Props = {
 export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDelete, canEdit }: Props) {
     const [creating, setCreating] = useState(false);
     const [newName, setNewName] = useState("");
-    const [newLang, setNewLang] = useState("javascript");
     const [renamingId, setRenamingId] = useState<string | null>(null);
     const [renameValue, setRenameValue] = useState("");
 
@@ -41,12 +40,15 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
         const name = newName.trim();
         if (!name) return toast.error("File name required");
         
-        // Find language configuration and enforce correct file extension
-        const lang = LANGUAGES.find((l) => l.id === newLang);
-        const ext = lang ? `.${lang.ext}` : "";
+        // Infer language from the extension of the typed name
+        const dotIndex = name.lastIndexOf(".");
+        const ext = dotIndex !== -1 ? name.slice(dotIndex + 1).toLowerCase() : "";
+        
+        const lang = LANGUAGES.find((l) => l.ext === ext) || LANGUAGES.find((l) => l.id === "javascript")!;
+        
         let finalName = name;
-        if (ext && !name.endsWith(ext)) {
-            finalName = name + ext;
+        if (dotIndex === -1) {
+            finalName = name + `.${lang.ext}`;
         }
 
         if (files.some((f) => f.name === finalName)) {
@@ -54,10 +56,9 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
         }
 
         try {
-            await onCreate(finalName, newLang);
+            await onCreate(finalName, lang.id);
             setCreating(false);
             setNewName("");
-            setNewLang("javascript");
         } catch (e: any) {
             toast.error(e?.message ?? "Failed to create file");
         }
@@ -204,18 +205,7 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
                                 className="mt-1"
                             />
                         </div>
-                        <div>
-                            <label className="text-xs font-medium text-muted-foreground">Language</label>
-                            <select
-                                value={newLang}
-                                onChange={(e) => setNewLang(e.target.value)}
-                                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            >
-                                {LANGUAGES.map((l) => (
-                                    <option key={l.id} value={l.id}>{l.label}</option>
-                                ))}
-                            </select>
-                        </div>
+
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setCreating(false)}>Cancel</Button>

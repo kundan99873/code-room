@@ -138,7 +138,7 @@ export default function Dashboard() {
         let list = rooms.slice();
         if (filter === "public") list = list.filter((r) => r.is_public);
         if (filter === "private") list = list.filter((r) => !r.is_public);
-        if (filter === "mine")    list = list.filter((r) => r.owner_id === user?.id);
+        if (filter === "mine") list = list.filter((r) => r.owner_id === user?.id);
         if (langFilter !== "all") list = list.filter((r) => r.language === langFilter);
         if (query.trim()) {
             const q = query.toLowerCase();
@@ -330,8 +330,8 @@ export default function Dashboard() {
                                     key={f}
                                     onClick={() => setFilter(f)}
                                     className={`px-3 py-1 text-xs rounded-md transition capitalize cursor-pointer ${filter === f
-                                            ? "bg-primary text-primary-foreground shadow"
-                                            : "text-muted-foreground hover:text-foreground"
+                                        ? "bg-primary text-primary-foreground shadow"
+                                        : "text-muted-foreground hover:text-foreground"
                                         }`}
                                 >
                                     {f}

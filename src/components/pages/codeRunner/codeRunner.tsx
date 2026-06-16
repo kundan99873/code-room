@@ -198,6 +198,7 @@ export function CodeRunner({
       onFormat={format}
       onCopy={copy}
       onDownload={download}
+      fileName={activeFileName}
     />
   );
 

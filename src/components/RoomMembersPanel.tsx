@@ -21,11 +21,13 @@ export function RoomMembersPanel({
     isOwner,
     isPublic,
     onVisibilityChange,
+    onlineUserIds = [],
 }: {
     roomId: string;
     isOwner: boolean;
     isPublic: boolean;
     onVisibilityChange: (isPublic: boolean) => void;
+    onlineUserIds?: string[];
 }) {
     const { user } = useAuth();
     const queryClient = useQueryClient();
@@ -166,10 +168,15 @@ export function RoomMembersPanel({
                                 className="flex items-center justify-between p-2 rounded-lg border border-border/40 bg-muted/20 hover:bg-muted/40 transition"
                             >
                                 <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500/10 to-fuchsia-500/10 border border-primary/20 flex items-center justify-center shrink-0">
-                                        <span className="text-[10px] font-semibold text-primary uppercase">
-                                            {m.userId?.name?.charAt(0) || "U"}
-                                        </span>
+                                    <div className="relative shrink-0">
+                                        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500/10 to-fuchsia-500/10 border border-primary/20 flex items-center justify-center">
+                                            <span className="text-[10px] font-semibold text-primary uppercase">
+                                                {m.userId?.name?.charAt(0) || "U"}
+                                            </span>
+                                        </div>
+                                        {onlineUserIds.includes(m.userId?._id) && (
+                                            <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 border border-card animate-pulse" />
+                                        )}
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-xs font-medium truncate flex items-center gap-1">

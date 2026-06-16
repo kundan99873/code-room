@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { OnMount } from "@monaco-editor/react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth";
 import { RoomMembersPanel } from "@/components/RoomMembersPanel";
@@ -10,6 +9,7 @@ import { RoomHeader } from "@/components/pages/room/roomHeader";
 import { RoomNotFound, PrivateRoomRequest } from "@/components/pages/room/roomStates";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { io, type Socket } from "socket.io-client";
 import {
     fetchRoom,
     fetchRoomFiles,
@@ -36,6 +36,18 @@ type AccessState =
     | { kind: "request"; status: "idle" | "sent" | "pending" | "rejected" }
     | { kind: "not-found" };
 
+const getStableColor = (id: string) => {
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+        hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const colors = [
+        "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", 
+        "#ec4899", "#14b8a6", "#f97316", "#06b6d4"
+    ];
+    return colors[Math.abs(hash) % colors.length];
+};
+
 export default function RoomPage() {
     const { id } = useParams<{ id: string }>();
     const { user } = useAuth();
@@ -49,9 +61,27 @@ export default function RoomPage() {
     const [isMember, setIsMember] = useState(false);
     const skipNextRef = useRef(false);
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
+    
+    const editorRef = useRef<any>(null);
+    const monacoRef = useRef<any>(null);
+    const socketRef = useRef<Socket | null>(null);
+    const prevDecorationsRef = useRef<string[]>([]);
+    
+    const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
+    const [remoteCursors, setRemoteCursors] = useState<Record<string, { userName: string; fileId: string; position: { lineNumber: number; column: number } | null }>>({});
+    const [recentFileIds, setRecentFileIds] = useState<string[]>([]);
+
     const filesRef = useRef<RoomFile[]>([]);
     filesRef.current = files;
+
+    // Track recently visited files
+    useEffect(() => {
+        if (!activeFileId) return;
+        setRecentFileIds((prev) => {
+            const filtered = prev.filter((fid) => fid !== activeFileId);
+            return [activeFileId, ...filtered].slice(0, 5);
+        });
+    }, [activeFileId]);
 
     const activeFile = useMemo(
         () => files.find((f) => f.id === activeFileId) ?? null,
@@ -128,12 +158,162 @@ export default function RoomPage() {
         load();
     }, [id, user?.id]);
 
+    // Socket.io connection and event handlers
     useEffect(() => {
-        if (access.kind !== "ok" || !user) return;
-        setConnected(true);
-        setPresence(1);
-        return () => {};
-    }, [id, user, access.kind]);
+        if (access.kind !== "ok" || !user || !id) return;
+
+        const socket = io({
+            query: {
+                roomId: id,
+            },
+            transports: ["websocket", "polling"],
+        });
+
+        socketRef.current = socket;
+
+        socket.on("connect", () => {
+            setConnected(true);
+            socket.emit("join-room");
+        });
+
+        socket.on("disconnect", () => {
+            setConnected(false);
+        });
+
+        // Listen for active users list
+        socket.on("room-users", (data: { users: any[]; count: number }) => {
+            setPresence(data.count);
+            setOnlineUsers(data.users);
+
+            // Cleanup remote cursors for users who left
+            const activeUserIds = new Set(data.users.map((u) => u.id));
+            setRemoteCursors((prev) => {
+                const next = { ...prev };
+                let changed = false;
+                Object.keys(next).forEach((uid) => {
+                    if (!activeUserIds.has(uid)) {
+                        delete next[uid];
+                        changed = true;
+                    }
+                });
+                return changed ? next : prev;
+            });
+        });
+
+        // Listen for real-time code changes from other users
+        socket.on("code-update", (data: { fileId: string; content: string; senderId: string }) => {
+            // Update the files state
+            setFiles((prev) =>
+                prev.map((f) => (f.id === data.fileId ? { ...f, content: data.content } : f))
+            );
+
+            // If it's the active file and Monaco is initialized, set value directly to prevent scroll jump
+            if (activeFileId === data.fileId && editorRef.current) {
+                const currentValue = editorRef.current.getValue();
+                if (currentValue !== data.content) {
+                    skipNextRef.current = true;
+                    const position = editorRef.current.getPosition();
+                    editorRef.current.setValue(data.content);
+                    if (position) {
+                        editorRef.current.setPosition(position);
+                    }
+                }
+            }
+        });
+
+        // Listen for remote cursors positions
+        socket.on("cursor-update", (data: { userId: string; userName: string; fileId: string; position: { lineNumber: number; column: number } | null }) => {
+            setRemoteCursors((prev) => ({
+                ...prev,
+                [data.userId]: {
+                    userName: data.userName,
+                    fileId: data.fileId,
+                    position: data.position,
+                },
+            }));
+        });
+
+        // Listen for room file operations (creation, rename, deletion)
+        socket.on("file-update", () => {
+            loadFiles();
+        });
+
+        socket.on("error-msg", (msg: string) => {
+            toast.error(msg);
+        });
+
+        return () => {
+            socket.disconnect();
+            socketRef.current = null;
+            setConnected(false);
+        };
+    }, [id, user, access.kind, activeFileId]);
+
+    // Notify server of active file updates
+    useEffect(() => {
+        if (socketRef.current && activeFileId && connected) {
+            socketRef.current.emit("active-file-change", activeFileId);
+        }
+    }, [activeFileId, connected]);
+
+    // Create dynamic styles for remote cursors colors
+    useEffect(() => {
+        let styleTag = document.getElementById("remote-cursor-styles") as HTMLStyleElement;
+        if (!styleTag) {
+            styleTag = document.createElement("style");
+            styleTag.id = "remote-cursor-styles";
+            document.head.appendChild(styleTag);
+        }
+
+        const cssRules = onlineUsers
+            .map((u) => {
+                const color = getStableColor(u.id);
+                return `
+                    .remote-cursor-${u.id} {
+                        position: relative;
+                        border-left: 2px solid ${color} !important;
+                        margin-left: -1px;
+                    }
+                `;
+            })
+            .join("\n");
+
+        styleTag.textContent = cssRules;
+    }, [onlineUsers]);
+
+    // Update Monaco editor decorations for remote cursors
+    useEffect(() => {
+        if (!editorRef.current || !monacoRef.current || !activeFileId) return;
+
+        const editor = editorRef.current;
+        const monaco = monacoRef.current;
+        const newDecorations: any[] = [];
+
+        Object.entries(remoteCursors).forEach(([userId, cursor]) => {
+            if (cursor.fileId !== activeFileId || !cursor.position) return;
+
+            const pos = cursor.position;
+            const range = new monaco.Range(
+                pos.lineNumber,
+                pos.column,
+                pos.lineNumber,
+                pos.column
+            );
+
+            newDecorations.push({
+                range,
+                options: {
+                    className: `remote-cursor-${userId}`,
+                    hoverMessage: { value: `**${cursor.userName}**` },
+                },
+            });
+        });
+
+        prevDecorationsRef.current = editor.deltaDecorations(
+            prevDecorationsRef.current,
+            newDecorations
+        );
+    }, [remoteCursors, activeFileId]);
 
     const persist = (fileId: string, content: string) => {
         if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -162,25 +342,17 @@ export default function RoomPage() {
         setFiles((prev) =>
             prev.map((f) => (f.id === activeFile.id ? { ...f, content: value } : f))
         );
+
+        if (socketRef.current) {
+            socketRef.current.emit("code-change", {
+                fileId: activeFile.id,
+                content: value,
+            });
+        }
+
         persist(activeFile.id, value);
     };
 
-    const onLanguageChange = async (lang: string) => {
-        if (!activeFile) return;
-        try {
-            await updateRoomFile(id!, activeFile.id, { language: lang });
-            setFiles((prev) =>
-                prev.map((f) =>
-                    f.id === activeFile.id
-                        ? { ...f, language: lang, updated_at: new Date().toISOString() }
-                        : f
-                )
-            );
-            toast.success(`Language changed to ${lang}`);
-        } catch (e: any) {
-            toast.error(e.message || "Failed to update language");
-        }
-    };
 
     const createFile = async (name: string, language: string) => {
         if (!user) return;
@@ -198,6 +370,13 @@ export default function RoomPage() {
             setFiles((prev) => [...prev, newFile]);
             setActiveFileId(newFile.id);
             toast.success(`Created ${name}`);
+
+            if (socketRef.current) {
+                socketRef.current.emit("file-event", {
+                    action: "create",
+                    file: newFile,
+                });
+            }
         } catch (e: any) {
             toast.error(e.message || "Failed to create file");
         }
@@ -214,6 +393,14 @@ export default function RoomPage() {
                 )
             );
             toast.success(`Renamed file to ${name}`);
+
+            if (socketRef.current) {
+                socketRef.current.emit("file-event", {
+                    action: "rename",
+                    fileId,
+                    name,
+                });
+            }
         } catch (e: any) {
             toast.error(e.message || "Failed to rename file");
         }
@@ -230,6 +417,13 @@ export default function RoomPage() {
             setFiles(remaining);
             if (activeFileId === fileId) setActiveFileId(remaining[0]?.id ?? null);
             toast.success("File deleted");
+
+            if (socketRef.current) {
+                socketRef.current.emit("file-event", {
+                    action: "delete",
+                    fileId,
+                });
+            }
         } catch (e: any) {
             toast.error(e.message || "Failed to delete file");
         }
@@ -293,6 +487,10 @@ export default function RoomPage() {
                 panelOpen={panelOpen}
                 setPanelOpen={setPanelOpen}
                 copyLink={copyLink}
+                files={files}
+                activeFileId={activeFileId}
+                onFileSelect={setActiveFileId}
+                recentFileIds={recentFileIds}
             />
 
             <motion.div
@@ -318,9 +516,32 @@ export default function RoomPage() {
                                 value={activeFile.content}
                                 language={activeFile.language}
                                 onChange={onChange}
-                                onLanguageChange={onLanguageChange}
-                                onEditorMount={(editor: any) => {
+                                onEditorMount={(editor: any, monaco: any) => {
                                     editorRef.current = editor;
+                                    monacoRef.current = monaco;
+
+                                    // Listen to local cursor position changes and emit
+                                    editor.onDidChangeCursorPosition((e: any) => {
+                                        if (socketRef.current && activeFileId) {
+                                            socketRef.current.emit("cursor-move", {
+                                                fileId: activeFileId,
+                                                position: {
+                                                    lineNumber: e.position.lineNumber,
+                                                    column: e.position.column,
+                                                },
+                                            });
+                                        }
+                                    });
+
+                                    // Listen to local cursor blur
+                                    editor.onDidBlurEditorText(() => {
+                                        if (socketRef.current && activeFileId) {
+                                            socketRef.current.emit("cursor-move", {
+                                                fileId: activeFileId,
+                                                position: null,
+                                            });
+                                        }
+                                    });
                                 }}
                                 heightClass="h-full"
                                 allFiles={files}
@@ -339,6 +560,7 @@ export default function RoomPage() {
                             roomId={room.id}
                             isOwner={room.owner_id === user?.id || room.owner_id === user?._id}
                             isPublic={room.is_public}
+                            onlineUserIds={onlineUsers.map((u) => u.id)}
                             onVisibilityChange={async (next: boolean) => {
                                 try {
                                     await updateRoom(room.id, { isPublic: next });

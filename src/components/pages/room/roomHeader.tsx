@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
     ArrowLeft, Sparkles, Globe2, Lock, LockKeyhole, Wifi, WifiOff, Users, Copy,
-    PanelRightClose, PanelRightOpen,
+    PanelRightClose, PanelRightOpen, Clock,
 } from "lucide-react";
+import { type RoomFile } from "@/components/pages/codeRunner/fileTabs";
 
 type Room = {
     id: string;
@@ -26,6 +27,10 @@ export function RoomHeader({
     panelOpen,
     setPanelOpen,
     copyLink,
+    files = [],
+    activeFileId = null,
+    onFileSelect,
+    recentFileIds = [],
 }: {
     room: Room;
     filesCount: number;
@@ -36,6 +41,10 @@ export function RoomHeader({
     panelOpen: boolean;
     setPanelOpen: React.Dispatch<React.SetStateAction<boolean>>;
     copyLink: () => void;
+    files?: RoomFile[];
+    activeFileId?: string | null;
+    onFileSelect?: (id: string) => void;
+    recentFileIds?: string[];
 }) {
     return (
         <motion.header
@@ -80,6 +89,36 @@ export function RoomHeader({
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
+                    {files && files.length > 0 && onFileSelect && (
+                        <div className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs shadow-sm focus-within:ring-1 focus-within:ring-primary/40">
+                            <Clock className="h-3.5 w-3.5 text-primary" />
+                            <span className="text-muted-foreground mr-1 hidden sm:inline">Recent:</span>
+                            <select
+                                value={activeFileId || ""}
+                                onChange={(e) => onFileSelect(e.target.value)}
+                                className="bg-transparent text-foreground border-none focus:outline-none cursor-pointer max-w-[120px] font-mono text-xs select-none pr-1"
+                            >
+                                <option value="" disabled>Select file...</option>
+                                {recentFileIds && recentFileIds.length > 0 ? (
+                                    recentFileIds.map((fid) => {
+                                        const f = files.find((file) => file.id === fid);
+                                        if (!f) return null;
+                                        return (
+                                            <option key={f.id} value={f.id} className="bg-card text-foreground">
+                                                {f.name}
+                                            </option>
+                                        );
+                                    })
+                                ) : (
+                                    files.map((f) => (
+                                        <option key={f.id} value={f.id} className="bg-card text-foreground">
+                                            {f.name}
+                                        </option>
+                                    ))
+                                )}
+                            </select>
+                        </div>
+                    )}
                     <div className="flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs shadow-sm">
                         <span className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-emerald-500 animate-pulse" : "bg-destructive"}`} />
                         {connected ? <span className="text-foreground">Live sync</span> : <span className="text-muted-foreground">Offline</span>}
