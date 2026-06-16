@@ -10,6 +10,7 @@ import { RoomNotFound, PrivateRoomRequest } from "@/components/pages/room/roomSt
 import { Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { io, type Socket } from "socket.io-client";
+import { fetchCurrentUser } from "@/api/auth";
 import {
     fetchRoom,
     fetchRoomFiles,
@@ -69,19 +70,9 @@ export default function RoomPage() {
     
     const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
     const [remoteCursors, setRemoteCursors] = useState<Record<string, { userName: string; fileId: string; position: { lineNumber: number; column: number } | null }>>({});
-    const [recentFileIds, setRecentFileIds] = useState<string[]>([]);
 
     const filesRef = useRef<RoomFile[]>([]);
     filesRef.current = files;
-
-    // Track recently visited files
-    useEffect(() => {
-        if (!activeFileId) return;
-        setRecentFileIds((prev) => {
-            const filtered = prev.filter((fid) => fid !== activeFileId);
-            return [activeFileId, ...filtered].slice(0, 5);
-        });
-    }, [activeFileId]);
 
     const activeFile = useMemo(
         () => files.find((f) => f.id === activeFileId) ?? null,
@@ -178,6 +169,19 @@ export default function RoomPage() {
 
         socket.on("disconnect", () => {
             setConnected(false);
+        });
+
+        socket.on("connect_error", async (err) => {
+            console.error("Socket connection error:", err.message);
+            if (err.message.includes("Authentication error")) {
+                try {
+                    await fetchCurrentUser();
+                    socket.connect();
+                } catch (refreshErr) {
+                    toast.error("Session expired. Please log in again.");
+                    nav("/auth");
+                }
+            }
         });
 
         // Listen for active users list
@@ -487,10 +491,6 @@ export default function RoomPage() {
                 panelOpen={panelOpen}
                 setPanelOpen={setPanelOpen}
                 copyLink={copyLink}
-                files={files}
-                activeFileId={activeFileId}
-                onFileSelect={setActiveFileId}
-                recentFileIds={recentFileIds}
             />
 
             <motion.div
