@@ -105,9 +105,13 @@ export const LANGUAGES: Lang[] = [
   },
 ];
 
-export const LANG_BY_ID: Record<string, Lang> = Object.fromEntries(
-  LANGUAGES.map((l) => [l.id, l]),
-);
+export const LANG_BY_ID: Record<string, Lang> = {
+  ...Object.fromEntries(LANGUAGES.map((l) => [l.id, l])),
+  js: LANGUAGES.find((l) => l.id === "javascript")!,
+  ts: LANGUAGES.find((l) => l.id === "typescript")!,
+  py: LANGUAGES.find((l) => l.id === "python")!,
+  "c++": LANGUAGES.find((l) => l.id === "cpp")!,
+};
 
 const PISTON_ENDPOINT_KEY = "piston_endpoint";
 export function getPistonEndpoint(): string {
@@ -424,6 +428,21 @@ async function runOnCodex(
   return null;
 }
 
+function isSystemExecutionError(r: RunResult | null): boolean {
+  if (!r) return true;
+  if (r.ok) return false;
+  const errText = (r.stderr || "").toLowerCase();
+  return (
+    errText.includes("oci runtime error") ||
+    errText.includes("crun:") ||
+    errText.includes("runc:") ||
+    errText.includes("resource temporarily unavailable") ||
+    errText.includes("failed to create container") ||
+    errText.includes("pids limit reached") ||
+    errText.includes("clone: resource temporarily unavailable")
+  );
+}
+
 export async function runOnPiston(
   langId: string,
   source: string,
@@ -460,29 +479,43 @@ export async function runOnPiston(
     if (custom) {
       const piston = await runOnPistonAt(custom, langId, source, stdin, allFiles, activeFileName);
       if (piston && (piston.ok || piston.stdout || piston.stderr)) {
-        return { ...piston, timeMs: Math.round(performance.now() - t0) };
+        if (!isSystemExecutionError(piston)) {
+          return { ...piston, timeMs: Math.round(performance.now() - t0) };
+        }
       }
     }
 
     // Primary public runner: Wandbox (Rust, Go, Java, C++, C#, Ruby, Bash, etc.).
     const wb = await runOnWandbox(langId, source, stdin, allFiles, activeFileName);
     if (wb && (wb.ok || wb.stdout || wb.stderr)) {
-      return { ...wb, timeMs: Math.round(performance.now() - t0) };
+      if (!isSystemExecutionError(wb)) {
+        return { ...wb, timeMs: Math.round(performance.now() - t0) };
+      }
     }
 
     // Codex fallback (py, js, java, cpp, c, go) if Wandbox returned nothing.
+    let codexResult: RunResult | null = null;
     if (lang.codex) {
       const codex = await runOnCodex(langId, source, stdin);
-      if (codex)
-        return { ...codex, timeMs: Math.round(performance.now() - t0) };
+      if (codex && (codex.ok || codex.stdout || codex.stderr)) {
+        if (!isSystemExecutionError(codex)) {
+          return { ...codex, timeMs: Math.round(performance.now() - t0) };
+        }
+        codexResult = codex;
+      }
     }
 
-    return {
+    // If everything failed or returned system/OCI errors, return the best available response.
+    const finalResult = codexResult || wb || {
       stdout: "",
-      stderr: wb?.stderr || `${lang.label} could not be executed.`,
+      stderr: `${lang.label} could not be executed. The public execution sandboxes are currently overloaded or down. Please try again, or configure a self-hosted Piston endpoint in the Runner settings (gear icon) for reliable execution.`,
       output: "",
       ok: false,
       provider: "none",
+    };
+
+    return {
+      ...finalResult,
       timeMs: Math.round(performance.now() - t0),
     };
   } catch (e: any) {

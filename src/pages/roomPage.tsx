@@ -74,6 +74,9 @@ export default function RoomPage() {
     const filesRef = useRef<RoomFile[]>([]);
     filesRef.current = files;
 
+    const activeFileIdRef = useRef<string | null>(null);
+    activeFileIdRef.current = activeFileId;
+
     const activeFile = useMemo(
         () => files.find((f) => f.id === activeFileId) ?? null,
         [files, activeFileId],
@@ -153,11 +156,13 @@ export default function RoomPage() {
     useEffect(() => {
         if (access.kind !== "ok" || !user || !id) return;
 
-        const socket = io({
+        const socketUrl = import.meta.env.DEV ? "http://localhost:3000" : window.location.origin;
+        const socket = io(socketUrl, {
             query: {
                 roomId: id,
             },
             transports: ["websocket", "polling"],
+            withCredentials: true,
         });
 
         socketRef.current = socket;
@@ -212,7 +217,7 @@ export default function RoomPage() {
             );
 
             // If it's the active file and Monaco is initialized, set value directly to prevent scroll jump
-            if (activeFileId === data.fileId && editorRef.current) {
+            if (activeFileIdRef.current === data.fileId && editorRef.current) {
                 const currentValue = editorRef.current.getValue();
                 if (currentValue !== data.content) {
                     skipNextRef.current = true;
@@ -238,8 +243,25 @@ export default function RoomPage() {
         });
 
         // Listen for room file operations (creation, rename, deletion)
-        socket.on("file-update", () => {
-            loadFiles();
+        socket.on("file-update", (data: { action: "create" | "rename" | "delete"; fileId?: string; name?: string; file?: any }) => {
+            if (data.action === "create" && data.file) {
+                setFiles((prev) => {
+                    if (prev.some((f) => f.id === data.file.id)) return prev;
+                    return [...prev, data.file];
+                });
+            } else if (data.action === "rename" && data.fileId && data.name) {
+                setFiles((prev) =>
+                    prev.map((f) => (f.id === data.fileId ? { ...f, name: data.name! } : f))
+                );
+            } else if (data.action === "delete" && data.fileId) {
+                setFiles((prev) => {
+                    const remaining = prev.filter((f) => f.id !== data.fileId);
+                    if (activeFileIdRef.current === data.fileId) {
+                        setActiveFileId(remaining[0]?.id ?? null);
+                    }
+                    return remaining;
+                });
+            }
         });
 
         socket.on("error-msg", (msg: string) => {
@@ -251,7 +273,7 @@ export default function RoomPage() {
             socketRef.current = null;
             setConnected(false);
         };
-    }, [id, user, access.kind, activeFileId]);
+    }, [id, user, access.kind]);
 
     // Notify server of active file updates
     useEffect(() => {
@@ -277,6 +299,24 @@ export default function RoomPage() {
                         position: relative;
                         border-left: 2px solid ${color} !important;
                         margin-left: -1px;
+                    }
+                    .remote-cursor-${u.id}::after {
+                        content: "${u.name}";
+                        position: absolute;
+                        top: -14px;
+                        left: -2px;
+                        background: ${color};
+                        color: #ffffff;
+                        font-size: 9px;
+                        font-family: system-ui, sans-serif;
+                        font-weight: 600;
+                        padding: 1px 4px;
+                        border-radius: 3px;
+                        white-space: nowrap;
+                        pointer-events: none;
+                        z-index: 50;
+                        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+                        opacity: 0.9;
                     }
                 `;
             })

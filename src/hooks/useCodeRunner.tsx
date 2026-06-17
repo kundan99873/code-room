@@ -71,7 +71,7 @@ export function useCodeRunner({
 
     if (mode === "browser") {
       setRunning(true);
-      const source = language === "typescript" ? transformTypeScript(codeRef.current) : codeRef.current;
+      const source = (language === "typescript" || language === "ts") ? transformTypeScript(codeRef.current) : codeRef.current;
       const html = buildJsSandbox(source);
       iframeRef.current!.srcdoc = html;
       setTimeout(() => setRunning(false), 8000);

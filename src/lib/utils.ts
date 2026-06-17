@@ -65,8 +65,27 @@ export function buildJsSandbox(source: string): string {
         const orig = console[k].bind(console);
         console[k] = (...a) => { send(k, a); orig(...a); };
       });
-      window.addEventListener("error", (e) => send("error", [e.message]));
-      window.addEventListener("unhandledrejection", (e) => send("error", ["Unhandled rejection: " + (e.reason && e.reason.message || e.reason)]));
+      window.addEventListener("error", (e) => {
+        send("error", [e.message + (e.lineno ? " (line " + e.lineno + ")" : "")]);
+        send("done", []);
+      });
+      window.addEventListener("unhandledrejection", (e) => {
+        send("error", ["Unhandled rejection: " + (e.reason && e.reason.message || e.reason)]);
+        send("done", []);
+      });
+    })();
+  <\/script>
+  <script>
+    (function(){
+      const safe = (v) => {
+        try {
+          if (v instanceof Error) return v.stack || v.message;
+          if (typeof v === "function") return v.toString();
+          if (typeof v === "object" && v !== null) return JSON.stringify(v, null, 2);
+          return String(v);
+        } catch (e) { return String(v); }
+      };
+      const send = (level, args) => parent.postMessage({ __runner: true, level, args: args.map(safe) }, "*");
       try {
         ${source}
         send("done", []);
