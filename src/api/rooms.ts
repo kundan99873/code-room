@@ -51,6 +51,8 @@ export interface JoinRequest {
   createdAt: string;
 }
 
+import { apiFetch } from "./apiClient";
+
 const handleResponse = async (res: Response) => {
   const result = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -64,7 +66,7 @@ const handleResponse = async (res: Response) => {
 
 // Rooms API
 export const createRoom = async (roomData: { name: string; language?: string; isPublic?: boolean }): Promise<any> => {
-  const res = await fetch("/api/rooms", {
+  const res = await apiFetch("/api/rooms", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(roomData),
@@ -73,17 +75,17 @@ export const createRoom = async (roomData: { name: string; language?: string; is
 };
 
 export const fetchUserRooms = async (): Promise<any[]> => {
-  const res = await fetch("/api/rooms/my");
+  const res = await apiFetch("/api/rooms/my");
   return handleResponse(res);
 };
 
 export const fetchRoom = async (roomId: string): Promise<any> => {
-  const res = await fetch(`/api/rooms/${roomId}`);
+  const res = await apiFetch(`/api/rooms/${roomId}`);
   return handleResponse(res);
 };
 
 export const updateRoom = async (roomId: string, roomData: { name?: string; language?: string; isPublic?: boolean }): Promise<any> => {
-  const res = await fetch(`/api/rooms/${roomId}`, {
+  const res = await apiFetch(`/api/rooms/${roomId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(roomData),
@@ -92,7 +94,7 @@ export const updateRoom = async (roomId: string, roomData: { name?: string; lang
 };
 
 export const deleteRoom = async (roomId: string): Promise<any> => {
-  const res = await fetch(`/api/rooms/${roomId}`, {
+  const res = await apiFetch(`/api/rooms/${roomId}`, {
     method: "DELETE",
   });
   return handleResponse(res);
@@ -100,12 +102,12 @@ export const deleteRoom = async (roomId: string): Promise<any> => {
 
 // Members API
 export const fetchRoomMembers = async (roomId: string): Promise<any[]> => {
-  const res = await fetch(`/api/rooms/${roomId}/members`);
+  const res = await apiFetch(`/api/rooms/${roomId}/members`);
   return handleResponse(res);
 };
 
 export const addRoomMember = async (roomId: string, email: string): Promise<any> => {
-  const res = await fetch(`/api/rooms/${roomId}/members`, {
+  const res = await apiFetch(`/api/rooms/${roomId}/members`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
@@ -114,14 +116,14 @@ export const addRoomMember = async (roomId: string, email: string): Promise<any>
 };
 
 export const removeRoomMember = async (roomId: string, userId: string): Promise<any> => {
-  const res = await fetch(`/api/rooms/${roomId}/members/${userId}`, {
+  const res = await apiFetch(`/api/rooms/${roomId}/members/${userId}`, {
     method: "DELETE",
   });
   return handleResponse(res);
 };
 
 export const updateRoomMemberRole = async (roomId: string, userId: string, role: "admin" | "member"): Promise<any> => {
-  const res = await fetch(`/api/rooms/${roomId}/members/${userId}/role`, {
+  const res = await apiFetch(`/api/rooms/${roomId}/members/${userId}/role`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ role }),
@@ -131,12 +133,12 @@ export const updateRoomMemberRole = async (roomId: string, userId: string, role:
 
 // Files API
 export const fetchRoomFiles = async (roomId: string): Promise<any[]> => {
-  const res = await fetch(`/api/rooms/${roomId}/files`);
+  const res = await apiFetch(`/api/rooms/${roomId}/files`);
   return handleResponse(res);
 };
 
 export const createRoomFile = async (roomId: string, fileData: { name: string; language?: string; content?: string }): Promise<any> => {
-  const res = await fetch(`/api/rooms/${roomId}/files`, {
+  const res = await apiFetch(`/api/rooms/${roomId}/files`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(fileData),
@@ -145,7 +147,7 @@ export const createRoomFile = async (roomId: string, fileData: { name: string; l
 };
 
 export const updateRoomFile = async (roomId: string, fileId: string, fileData: { name?: string; language?: string; content?: string }): Promise<any> => {
-  const res = await fetch(`/api/rooms/${roomId}/files/${fileId}`, {
+  const res = await apiFetch(`/api/rooms/${roomId}/files/${fileId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(fileData),
@@ -154,7 +156,7 @@ export const updateRoomFile = async (roomId: string, fileId: string, fileData: {
 };
 
 export const deleteRoomFile = async (roomId: string, fileId: string): Promise<any> => {
-  const res = await fetch(`/api/rooms/${roomId}/files/${fileId}`, {
+  const res = await apiFetch(`/api/rooms/${roomId}/files/${fileId}`, {
     method: "DELETE",
   });
   return handleResponse(res);
@@ -162,19 +164,19 @@ export const deleteRoomFile = async (roomId: string, fileId: string): Promise<an
 
 // Join Requests API
 export const createJoinRequest = async (roomId: string): Promise<any> => {
-  const res = await fetch(`/api/rooms/${roomId}/join`, {
+  const res = await apiFetch(`/api/rooms/${roomId}/join`, {
     method: "POST",
   });
   return handleResponse(res);
 };
 
 export const fetchJoinRequests = async (roomId: string): Promise<any[]> => {
-  const res = await fetch(`/api/rooms/${roomId}/join-requests`);
+  const res = await apiFetch(`/api/rooms/${roomId}/join-requests`);
   return handleResponse(res);
 };
 
 export const handleJoinRequest = async (roomId: string, requestId: string, status: "approved" | "rejected"): Promise<any> => {
-  const res = await fetch(`/api/rooms/${roomId}/join-requests/${requestId}`, {
+  const res = await apiFetch(`/api/rooms/${roomId}/join-requests/${requestId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),

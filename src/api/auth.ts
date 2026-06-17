@@ -1,3 +1,5 @@
+import { apiFetch } from "./apiClient";
+
 export interface User {
   id: string;
   _id?: string;
@@ -11,7 +13,7 @@ export interface User {
 }
 
 export const fetchCurrentUser = async (): Promise<User> => {
-  const res = await fetch("/api/auth/me");
+  const res = await apiFetch("/api/auth/me");
   if (!res.ok) {
     throw new Error("Not authenticated");
   }
@@ -24,7 +26,7 @@ export const fetchCurrentUser = async (): Promise<User> => {
 };
 
 export const loginRequest = async (credentials: any) => {
-  const res = await fetch("/api/auth/login", {
+  const res = await apiFetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(credentials),
@@ -37,7 +39,7 @@ export const loginRequest = async (credentials: any) => {
 };
 
 export const registerRequest = async (userData: any) => {
-  const res = await fetch("/api/auth/register", {
+  const res = await apiFetch("/api/auth/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
@@ -50,7 +52,7 @@ export const registerRequest = async (userData: any) => {
 };
 
 export const logoutRequest = async () => {
-  const res = await fetch("/api/auth/logout", {
+  const res = await apiFetch("/api/auth/logout", {
     method: "POST",
   });
   if (!res.ok) {

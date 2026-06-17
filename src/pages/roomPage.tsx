@@ -156,7 +156,7 @@ export default function RoomPage() {
     useEffect(() => {
         if (access.kind !== "ok" || !user || !id) return;
 
-        const socketUrl = import.meta.env.DEV ? "http://localhost:3000" : window.location.origin;
+        const socketUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.DEV ? "http://localhost:3000" : window.location.origin);
         const socket = io(socketUrl, {
             query: {
                 roomId: id,
