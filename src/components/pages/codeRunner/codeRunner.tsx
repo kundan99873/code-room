@@ -85,22 +85,6 @@ export function CodeRunner({
     return () => window.removeEventListener("keydown", onKey);
   }, [fullEditor, fullOutput]);
 
-  // Keyboard shortcuts: Cmd/Ctrl + Enter to run, Cmd/Ctrl + S to download
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault(); run();
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
-        e.preventDefault();
-        download();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [language]);
-
   const run = async () => {
     setLines([]);
     setExecMs(null);
@@ -153,6 +137,40 @@ export function CodeRunner({
     toast.success(`Downloaded main.${lang?.ext}`);
   };
 
+  const runRef = useRef(run);
+  runRef.current = run;
+  const downloadRef = useRef(download);
+  downloadRef.current = download;
+
+  // Keyboard shortcuts: Cmd/Ctrl + Enter to run, Cmd/Ctrl + S to download
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        runRef.current();
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        downloadRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const handleEditorMount: OnMount = (editor, monaco) => {
+    onEditorMount?.(editor, monaco);
+
+    // Register keyboard commands directly in Monaco Editor
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      runRef.current();
+    });
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+      downloadRef.current();
+    });
+  };
+
   const format = () => {
     try {
       if (language === "json") {
@@ -194,7 +212,7 @@ export function CodeRunner({
       isFull={fullEditor}
       onToggleFull={() => setFullEditor((f) => !f)}
       onChange={onChange}
-      onEditorMount={onEditorMount}
+      onEditorMount={handleEditorMount}
       onFormat={format}
       onCopy={copy}
       onDownload={download}

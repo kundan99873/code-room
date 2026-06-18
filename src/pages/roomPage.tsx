@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { io, type Socket } from "socket.io-client";
 import { fetchCurrentUser } from "@/api/auth";
+import { useQueryClient } from "@tanstack/react-query";
 import {
     fetchRoom,
     fetchRoomFiles,
@@ -53,6 +54,7 @@ export default function RoomPage() {
     const { id } = useParams<{ id: string }>();
     const { user } = useAuth();
     const nav = useNavigate();
+    const queryClient = useQueryClient();
     const [access, setAccess] = useState<AccessState>({ kind: "loading" });
     const [connected, setConnected] = useState(false);
     const [presence, setPresence] = useState(1);
@@ -154,7 +156,7 @@ export default function RoomPage() {
 
     // Socket.io connection and event handlers
     useEffect(() => {
-        if (access.kind !== "ok" || !user || !id) return;
+        if ((access.kind !== "ok" && access.kind !== "request") || !user || !id) return;
 
         const socketUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.DEV ? "http://localhost:3000" : window.location.origin);
         const socket = io(socketUrl, {
@@ -261,6 +263,32 @@ export default function RoomPage() {
                     }
                     return remaining;
                 });
+            }
+        });
+
+        socket.on("user-joined", (data: { id: string; name: string }) => {
+            toast.success(`${data.name} entered the room`);
+            queryClient.invalidateQueries({ queryKey: ["room-members", id] });
+        });
+
+        socket.on("user-left", (data: { id: string; name: string }) => {
+            toast(`${data.name} left the room`, { icon: "👋" });
+            queryClient.invalidateQueries({ queryKey: ["room-members", id] });
+        });
+
+        socket.on("new-join-request", () => {
+            queryClient.invalidateQueries({ queryKey: ["room-join-requests", id] });
+            toast("New join request received!", { icon: "🔔" });
+        });
+
+        socket.on("join-request-handled", (data: { roomId: string; status: "approved" | "rejected" }) => {
+            if (data.roomId !== id) return;
+            if (data.status === "approved") {
+                toast.success("Join request approved! Entering room...");
+                load();
+            } else {
+                toast.error("Join request rejected.");
+                setAccess({ kind: "request", status: "rejected" });
             }
         });
 

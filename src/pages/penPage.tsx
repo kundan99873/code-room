@@ -176,18 +176,30 @@ function PenPage() {
     return () => window.removeEventListener("message", onMsg);
   }, []);
 
+  const buildAndRunRef = useRef(buildAndRun);
+  buildAndRunRef.current = buildAndRun;
+
   // Shortcuts: Cmd/Ctrl+Enter to run, Esc to exit fullscreen.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault(); buildAndRun();
+        e.preventDefault();
+        buildAndRunRef.current();
       }
-      if (e.key === "Escape") { setFullPreview(false); setFullEditor(false); }
+      if (e.key === "Escape") {
+        setFullPreview(false);
+        setFullEditor(false);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [html, css, js]);
+  }, []);
+
+  const handleEditorMount = (editor: any, monaco: any) => {
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      buildAndRunRef.current();
+    });
+  };
 
   const current = tab === "html" ? html : tab === "css" ? css : js;
   const setCurrent = (v: string) => {
@@ -288,6 +300,7 @@ function PenPage() {
             defaultValue={current}
             theme={resolved === "dark" ? "vs-dark" : "vs-light"}
             onChange={(v) => setCurrent(v ?? "")}
+            onMount={handleEditorMount}
             options={{
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
               fontSize: 14,
