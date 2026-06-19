@@ -31,7 +31,7 @@ export interface RoomMember {
       url: string;
     };
   };
-  role: "owner" | "admin" | "member";
+  role: "owner" | "admin" | "editor" | "viewer";
   createdAt: string;
 }
 
@@ -122,7 +122,7 @@ export const removeRoomMember = async (roomId: string, userId: string): Promise<
   return handleResponse(res);
 };
 
-export const updateRoomMemberRole = async (roomId: string, userId: string, role: "admin" | "member"): Promise<any> => {
+export const updateRoomMemberRole = async (roomId: string, userId: string, role: "admin" | "editor" | "viewer"): Promise<any> => {
   const res = await apiFetch(`/api/rooms/${roomId}/members/${userId}/role`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },

@@ -11,7 +11,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { io, type Socket } from "socket.io-client";
 import { fetchCurrentUser } from "@/api/auth";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     fetchRoom,
     fetchRoomFiles,
@@ -20,6 +20,7 @@ import {
     deleteRoomFile,
     createJoinRequest,
     updateRoom,
+    fetchRoomMembers,
 } from "@/api/rooms";
 
 type Room = {
@@ -61,7 +62,6 @@ export default function RoomPage() {
     const [panelOpen, setPanelOpen] = useState(true);
     const [files, setFiles] = useState<RoomFile[]>([]);
     const [activeFileId, setActiveFileId] = useState<string | null>(null);
-    const [isMember, setIsMember] = useState(false);
     const skipNextRef = useRef(false);
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     
@@ -83,6 +83,16 @@ export default function RoomPage() {
         () => files.find((f) => f.id === activeFileId) ?? null,
         [files, activeFileId],
     );
+
+    const { data: members = [] } = useQuery<any[]>({
+        queryKey: ["room-members", id],
+        queryFn: () => fetchRoomMembers(id!),
+        enabled: !!id && access.kind === "ok",
+        refetchInterval: 5000,
+    });
+
+    const currentMember = members.find((m) => m.userId?._id === user?.id || m.userId?._id === user?._id);
+    const userRole = currentMember?.role || null;
 
     const loadFiles = async () => {
         try {
@@ -131,7 +141,6 @@ export default function RoomPage() {
             };
 
             setAccess({ kind: "ok", room });
-            setIsMember(true);
             await loadFiles();
         } catch (error: any) {
             console.error("Room load error:", error);
@@ -545,7 +554,7 @@ export default function RoomPage() {
         hour: "2-digit",
         minute: "2-digit",
     });
-    const canEdit = isMember || room.owner_id === user?.id || room.owner_id === user?._id;
+    const canEdit = userRole === "owner" || userRole === "editor" || room.owner_id === user?.id || room.owner_id === user?._id;
 
     return (
         <div className="h-screen overflow-hidden flex flex-col bg-background">
@@ -584,6 +593,7 @@ export default function RoomPage() {
                                 value={activeFile.content}
                                 language={activeFile.language}
                                 onChange={onChange}
+                                readOnly={!canEdit}
                                 onEditorMount={(editor: any, monaco: any) => {
                                     editorRef.current = editor;
                                     monacoRef.current = monaco;

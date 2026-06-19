@@ -20,12 +20,13 @@ type Props = {
   onCopy: () => void;
   onDownload: () => void;
   fileName?: string;
+  readOnly?: boolean;
 };
 
 export function EditorPanel({
   value, language, monacoLang, ext, mode, mounted, isFull,
   onToggleFull, onChange, onEditorMount, onFormat, onCopy, onDownload,
-  fileName,
+  fileName, readOnly = false,
 }: Props) {
   const { resolved } = useTheme();
 
@@ -44,9 +45,11 @@ export function EditorPanel({
           )}
         </div>
         <div className="flex items-center gap-1">
-          <Button size="sm" variant="ghost" className="h-7 px-2" onClick={onFormat} title="Format">
-            <Wand2 className="h-3.5 w-3.5" />
-          </Button>
+          {!readOnly && (
+            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={onFormat} title="Format">
+              <Wand2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
           <Button size="sm" variant="ghost" className="h-7 px-2" onClick={onCopy} title="Copy code">
             <Copy className="h-3.5 w-3.5" />
           </Button>
@@ -84,6 +87,7 @@ export function EditorPanel({
               autoClosingQuotes: "always",
               autoSurround: "languageDefined",
               wordWrap: "on",
+              readOnly: readOnly,
             }}
           />
         ) : (

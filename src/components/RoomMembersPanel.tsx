@@ -13,7 +13,7 @@ import {
     handleJoinRequest,
 } from "@/api/rooms";
 import {
-    Users, Plus, Trash2, Shield, ShieldCheck, Check, X, LogOut, Loader2, Mail
+    Users, Plus, Trash2, Shield, ShieldCheck, Check, X, LogOut, Loader2, Mail, Edit3, Eye
 } from "lucide-react";
 
 export function RoomMembersPanel({
@@ -83,7 +83,7 @@ export function RoomMembersPanel({
     });
 
     const updateRoleMutation = useMutation({
-        mutationFn: ({ userId, role }: { userId: string; role: "admin" | "member" }) =>
+        mutationFn: ({ userId, role }: { userId: string; role: "admin" | "editor" | "viewer" }) =>
             updateRoomMemberRole(roomId, userId, role),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["room-members", roomId] });
@@ -195,12 +195,13 @@ export function RoomMembersPanel({
                                             onChange={(e) =>
                                                 updateRoleMutation.mutate({
                                                     userId: m.userId._id,
-                                                    role: e.target.value as "admin" | "member",
+                                                    role: e.target.value as "admin" | "editor" | "viewer",
                                                 })
                                             }
                                             className="text-[10px] bg-background border border-border rounded px-1 py-0.5 text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
                                         >
-                                            <option value="member">Member</option>
+                                            <option value="viewer">Viewer</option>
+                                            <option value="editor">Editor</option>
                                             <option value="admin">Admin</option>
                                         </select>
                                     ) : (
@@ -209,6 +210,10 @@ export function RoomMembersPanel({
                                                 <ShieldCheck className="h-3 w-3 text-amber-500" />
                                             ) : m.role === "admin" ? (
                                                 <Shield className="h-3 w-3 text-indigo-400" />
+                                            ) : m.role === "editor" ? (
+                                                <Edit3 className="h-3.5 w-3.5 text-emerald-400" />
+                                            ) : m.role === "viewer" ? (
+                                                <Eye className="h-3.5 w-3.5 text-blue-400" />
                                             ) : null}
                                             {m.role}
                                         </span>

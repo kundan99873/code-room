@@ -25,12 +25,13 @@ type Props = {
   heightClass?: string;
   allFiles?: { name: string; content: string }[];
   activeFileName?: string;
+  readOnly?: boolean;
 };
 
 export function CodeRunner({
   value, language, onChange, onLanguageChange, onEditorMount,
   header, heightClass = "h-[calc(100vh-3.5rem)]",
-  allFiles = [], activeFileName = "",
+  allFiles = [], activeFileName = "", readOnly = false,
 }: Props) {
   const isMobile = useIsMobile();
   const [lines, setLines] = useState<OutLine[]>([]);
@@ -217,6 +218,7 @@ export function CodeRunner({
       onCopy={copy}
       onDownload={download}
       fileName={activeFileName}
+      readOnly={readOnly}
     />
   );
 
