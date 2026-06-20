@@ -45,7 +45,7 @@ const getStableColor = (id: string) => {
         hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
     const colors = [
-        "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", 
+        "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6",
         "#ec4899", "#14b8a6", "#f97316", "#06b6d4"
     ];
     return colors[Math.abs(hash) % colors.length];
@@ -59,17 +59,18 @@ export default function RoomPage() {
     const [access, setAccess] = useState<AccessState>({ kind: "loading" });
     const [connected, setConnected] = useState(false);
     const [presence, setPresence] = useState(1);
-    const [panelOpen, setPanelOpen] = useState(true);
+    const [panelOpen, setPanelOpen] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : true);
+    const [filesPanelOpen, setFilesPanelOpen] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 768 : true);
     const [files, setFiles] = useState<RoomFile[]>([]);
     const [activeFileId, setActiveFileId] = useState<string | null>(null);
     const skipNextRef = useRef(false);
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    
+
     const editorRef = useRef<any>(null);
     const monacoRef = useRef<any>(null);
     const socketRef = useRef<Socket | null>(null);
     const prevDecorationsRef = useRef<string[]>([]);
-    
+
     const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
     const [remoteCursors, setRemoteCursors] = useState<Record<string, { userName: string; fileId: string; position: { lineNumber: number; column: number } | null }>>({});
 
@@ -567,6 +568,8 @@ export default function RoomPage() {
                 presence={presence}
                 panelOpen={panelOpen}
                 setPanelOpen={setPanelOpen}
+                filesPanelOpen={filesPanelOpen}
+                setFilesPanelOpen={setFilesPanelOpen}
                 copyLink={copyLink}
             />
 
@@ -576,15 +579,19 @@ export default function RoomPage() {
                 transition={{ delay: 0.08, duration: 0.35, ease: "easeOut" }}
                 className="flex-1 min-h-0 bg-muted/20 flex"
             >
-                <FileTabs
-                    files={files}
-                    activeId={activeFileId}
-                    onSelect={setActiveFileId}
-                    onCreate={createFile}
-                    onRename={renameFile}
-                    onDelete={deleteFile}
-                    canEdit={canEdit}
-                />
+                {filesPanelOpen && (
+                    <div className="shrink-0 animate-in slide-in-from-left duration-200">
+                        <FileTabs
+                            files={files}
+                            activeId={activeFileId}
+                            onSelect={setActiveFileId}
+                            onCreate={createFile}
+                            onRename={renameFile}
+                            onDelete={deleteFile}
+                            canEdit={canEdit}
+                        />
+                    </div>
+                )}
                 <div className="flex-1 min-w-0 flex flex-col">
                     <div className="flex-1 min-h-0">
                         {activeFile ? (

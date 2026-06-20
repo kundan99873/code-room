@@ -57,13 +57,14 @@ export default function Dashboard() {
     // Map backend response rooms to frontend expected format
     const rooms = useMemo(() => {
         return rawRooms.map((r: any) => ({
-            id: r._id,
+            id: r.customId || r._id,
             name: r.name,
             language: r.language,
             owner_id: typeof r.ownerId === "object" ? r.ownerId?._id : r.ownerId,
             is_public: r.isPublic,
             updated_at: r.updatedAt,
             created_at: r.createdAt,
+            db_id: r._id,
         }));
     }, [rawRooms]);
 
@@ -73,7 +74,7 @@ export default function Dashboard() {
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["rooms"] });
             toast.success(`Created room "${data.name}"`);
-            navigate(`/room/${data._id}`);
+            navigate(`/room/${data.customId || data._id}`);
         },
         onError: (err: any) => {
             toast.error(err.message || "Failed to create room");

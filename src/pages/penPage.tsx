@@ -8,7 +8,7 @@ import { toast } from "react-hot-toast";
 import {
   Play, RefreshCw, Download, Copy, Maximize2, Minimize2,
   Monitor, Tablet, Smartphone, Eraser, FileCode2, Palette, Braces,
-  Eye, Code2, Settings2, Library, X, Plus,
+  Eye, Code2, Settings2, Library, X, Plus, ArrowLeft,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -140,14 +140,14 @@ function PenPage() {
         if (Array.isArray(s.cssLibs)) setCssLibs(s.cssLibs);
         if (Array.isArray(s.jsLibs)) setJsLibs(s.jsLibs);
       }
-    } catch {}
+    } catch { }
   }, []);
 
   // Persist.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const id = setTimeout(() => {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ html, css, js, cssLibs, jsLibs })); } catch {}
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ html, css, js, cssLibs, jsLibs })); } catch { }
     }, 400);
     return () => clearTimeout(id);
   }, [html, css, js, cssLibs, jsLibs]);
@@ -253,8 +253,8 @@ function PenPage() {
 
   const tabMeta: Record<Tab, { label: string; ext: string; color: string; icon: React.ReactNode }> = {
     html: { label: "HTML", ext: "html", color: "text-orange-500", icon: <FileCode2 className="h-3.5 w-3.5" /> },
-    css:  { label: "CSS",  ext: "css",  color: "text-sky-500",    icon: <Palette className="h-3.5 w-3.5" /> },
-    js:   { label: "JS",   ext: "js",   color: "text-amber-400",  icon: <Braces className="h-3.5 w-3.5" /> },
+    css: { label: "CSS", ext: "css", color: "text-sky-500", icon: <Palette className="h-3.5 w-3.5" /> },
+    js: { label: "JS", ext: "js", color: "text-amber-400", icon: <Braces className="h-3.5 w-3.5" /> },
   };
 
   const editorBlock = (
@@ -266,11 +266,10 @@ function PenPage() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`flex items-center gap-1.5 px-4 py-2 text-xs font-medium border-r border-border transition ${
-                tab === t
+              className={`flex items-center gap-1.5 px-4 py-2 text-xs font-medium border-r border-border transition ${tab === t
                   ? "bg-background text-foreground border-b-2 border-b-primary -mb-px"
                   : "text-muted-foreground hover:text-foreground hover:bg-background/40"
-              }`}
+                }`}
             >
               <span className={tabMeta[t].color}>{tabMeta[t].icon}</span>
               {tabMeta[t].label}
@@ -341,8 +340,8 @@ function PenPage() {
           <div className="flex items-center rounded border border-zinc-700 mr-1">
             {([
               { v: "desktop", icon: <Monitor className="h-3.5 w-3.5" />, label: "Desktop" },
-              { v: "tablet",  icon: <Tablet className="h-3.5 w-3.5" />,  label: "Tablet" },
-              { v: "mobile",  icon: <Smartphone className="h-3.5 w-3.5" />, label: "Mobile" },
+              { v: "tablet", icon: <Tablet className="h-3.5 w-3.5" />, label: "Tablet" },
+              { v: "mobile", icon: <Smartphone className="h-3.5 w-3.5" />, label: "Mobile" },
             ] as const).map((o) => (
               <button
                 key={o.v}
@@ -390,13 +389,12 @@ function PenPage() {
           ) : (
             <div className="px-3 py-2 space-y-0.5">
               {lines.map((l, i) => (
-                <pre key={i} className={`whitespace-pre-wrap ${
-                  l.level === "error" ? "text-rose-400" :
-                  l.level === "warn"  ? "text-amber-300" :
-                  l.level === "info"  ? "text-sky-300"   :
-                  l.level === "debug" ? "text-zinc-400"  :
-                                        "text-zinc-100"
-                }`}>
+                <pre key={i} className={`whitespace-pre-wrap ${l.level === "error" ? "text-rose-400" :
+                    l.level === "warn" ? "text-amber-300" :
+                      l.level === "info" ? "text-sky-300" :
+                        l.level === "debug" ? "text-zinc-400" :
+                          "text-zinc-100"
+                  }`}>
                   <span className="text-zinc-600 select-none mr-2">›</span>{l.text}
                 </pre>
               ))}
@@ -408,18 +406,21 @@ function PenPage() {
   );
 
   if (fullPreview) return <div className="fixed inset-0 z-50">{previewBlock}</div>;
-  if (fullEditor)  return <div className="fixed inset-0 z-50">{editorBlock}</div>;
+  if (fullEditor) return <div className="fixed inset-0 z-50">{editorBlock}</div>;
 
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-background">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-b border-border bg-card">
-        <div className="flex items-center gap-2 text-sm">
-          <span className="font-semibold">Web Playground</span>
-          <span className="text-muted-foreground hidden sm:inline">
-            — HTML + CSS + JS, live preview.{" "}
-            <Link to="/playground" className="text-primary hover:underline">Switch to multi-language</Link>
-          </span>
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-border bg-card">
+        <div className="flex items-center gap-3">
+          <Link to="/" className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition hover:text-foreground hover:border-primary/40" title="Back to Home">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div>
+            <h1 className="text-xl font-semibold flex items-center gap-2">
+              <Code2 className="h-5 w-5 text-primary" /> Web Playground
+            </h1>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none">
@@ -449,7 +450,11 @@ function PenPage() {
       </div>
 
       <div className="flex-1 min-h-0 overflow-hidden p-2 md:p-3">
-        <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="h-full w-full overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+        <ResizablePanelGroup
+          key={isMobile ? "vertical" : "horizontal"}
+          direction={isMobile ? "vertical" : "horizontal"}
+          className="h-full w-full overflow-hidden rounded-lg border border-border bg-card shadow-sm"
+        >
           <ResizablePanel defaultSize={isMobile ? 55 : 50} minSize={25}>{editorBlock}</ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={isMobile ? 45 : 50} minSize={25}>{previewBlock}</ResizablePanel>
@@ -468,7 +473,7 @@ function LibrariesPopover({
   const [cssDraft, setCssDraft] = useState("");
   const [jsDraft, setJsDraft] = useState("");
   const addCss = () => { const v = cssDraft.trim(); if (!v) return; setCssLibs([...cssLibs, v]); setCssDraft(""); };
-  const addJs  = () => { const v = jsDraft.trim();  if (!v) return; setJsLibs([...jsLibs, v]);   setJsDraft(""); };
+  const addJs = () => { const v = jsDraft.trim(); if (!v) return; setJsLibs([...jsLibs, v]); setJsDraft(""); };
   const total = cssLibs.length + jsLibs.length;
   return (
     <Popover>

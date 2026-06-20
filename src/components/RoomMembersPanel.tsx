@@ -190,20 +190,27 @@ export function RoomMembersPanel({
                                 <div className="flex items-center gap-1 shrink-0">
                                     {/* Role Badge / Actions */}
                                     {isOwner && !isSelf && m.role !== "owner" ? (
-                                        <select
-                                            value={m.role}
-                                            onChange={(e) =>
-                                                updateRoleMutation.mutate({
-                                                    userId: m.userId._id,
-                                                    role: e.target.value as "admin" | "editor" | "viewer",
-                                                })
-                                            }
-                                            className="text-[10px] bg-background border border-border rounded px-1 py-0.5 text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
-                                        >
-                                            <option value="viewer">Viewer</option>
-                                            <option value="editor">Editor</option>
-                                            <option value="admin">Admin</option>
-                                        </select>
+                                        <div className="relative flex items-center">
+                                            <select
+                                                value={m.role}
+                                                onChange={(e) =>
+                                                    updateRoleMutation.mutate({
+                                                        userId: m.userId._id,
+                                                        role: e.target.value as "admin" | "editor" | "viewer",
+                                                    })
+                                                }
+                                                className="appearance-none text-[10px] font-semibold bg-primary/10 hover:bg-primary/15 border border-primary/20 hover:border-primary/40 rounded-md pl-2 pr-5 py-1 text-primary cursor-pointer focus:outline-none transition duration-150 ease-in-out"
+                                            >
+                                                <option value="viewer" className="bg-card text-foreground">Viewer</option>
+                                                <option value="editor" className="bg-card text-foreground">Editor</option>
+                                                <option value="admin" className="bg-card text-foreground">Admin</option>
+                                            </select>
+                                            <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-primary">
+                                                <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                                                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                                </svg>
+                                            </span>
+                                        </div>
                                     ) : (
                                         <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-background border border-border flex items-center gap-1 capitalize">
                                             {m.role === "owner" ? (

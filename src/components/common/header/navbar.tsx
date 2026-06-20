@@ -1,4 +1,5 @@
-import { Code2, LogOut } from "lucide-react";
+import { useState } from "react";
+import { Code2, LogOut, Menu, X } from "lucide-react";
 import { ThemeToggle } from "./themeToggle";
 import { Link } from "react-router-dom";
 import CustomNavLink from "./customNavLink";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 
 export function Navbar() {
   const { user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-3 z-30 px-3 sm:px-4">
@@ -62,8 +64,54 @@ export function Navbar() {
                 </Link>
               </>
             )}
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full cursor-pointer hover:bg-accent sm:hidden"
+              aria-label="Toggle menu"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className="mt-3 flex flex-col gap-1.5 rounded-2xl border border-border/70 bg-background/95 p-3 shadow-lg backdrop-blur-xl sm:hidden">
+            <Link
+              to="/pen"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex w-full items-center px-4 py-2 text-sm font-medium rounded-lg hover:bg-accent transition"
+            >
+              Web Pen
+            </Link>
+            <Link
+              to="/playground"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex w-full items-center px-4 py-2 text-sm font-medium rounded-lg hover:bg-accent transition"
+            >
+              Playground
+            </Link>
+            <Link
+              to="/json"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex w-full items-center px-4 py-2 text-sm font-medium rounded-lg hover:bg-accent transition"
+            >
+              JSON Tools
+            </Link>
+            {user && (
+              <Link
+                to="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex w-full items-center px-4 py-2 text-sm font-medium rounded-lg hover:bg-accent transition"
+              >
+                Rooms
+              </Link>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

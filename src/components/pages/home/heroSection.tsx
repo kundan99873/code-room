@@ -2,11 +2,13 @@ import { ArrowRight, FileJson, Play, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import FloatingCode from "./floatingCode";
+import { useAuth } from "@/lib/auth";
 
 export default function HeroSection() {
+  const { user } = useAuth();
   return (
     <div>
-      <section className="relative">
+      <section className="relative overflow-hidden">
         {/* Background glow + grid */}
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.18),transparent_60%)]" />
@@ -99,12 +101,21 @@ room.on("edit", (op) => {
             >
               <FileJson className="h-4 w-4 text-primary" /> JSON Tools
             </Link>
-            <Link
-              to="/auth"
-              className="inline-flex items-center gap-2 rounded-lg px-6 py-3 font-medium text-muted-foreground hover:text-foreground transition"
-            >
-              Sign in to create rooms →
-            </Link>
+            {user ? (
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center gap-2 rounded-lg px-6 py-3 font-medium text-muted-foreground hover:text-foreground transition"
+              >
+                Go to Dashboard →
+              </Link>
+            ) : (
+              <Link
+                to="/auth"
+                className="inline-flex items-center gap-2 rounded-lg px-6 py-3 font-medium text-muted-foreground hover:text-foreground transition"
+              >
+                Sign in to create rooms →
+              </Link>
+            )}
           </motion.div>
 
           {/* Mock IDE preview */}

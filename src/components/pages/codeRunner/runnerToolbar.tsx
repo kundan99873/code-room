@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Loader2, Play, RefreshCw, Sparkles } from "lucide-react";
+import { Loader2, Play, RefreshCw } from "lucide-react";
 import { LanguageSelect } from "./languageSelect";
 import { RunnerSettings } from "./runnerSettings";
 
@@ -27,14 +27,11 @@ export function RunnerToolbar({
   onRun,
 }: Props) {
   return (
-    <div className="flex flex-col gap-3 border-b border-border bg-card/90 px-4 py-3 shadow-sm md:flex-row md:items-center md:justify-between">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="hidden h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm sm:grid">
-          <Sparkles className="h-4 w-4" />
-        </div>
-        <div className="min-w-0">{header}</div>
+    <div className="flex flex-col gap-3 border-b border-border bg-card px-4 py-3 md:flex-row md:items-center md:justify-between">
+      <div className="flex items-center gap-3 min-w-0 w-full">
+        <div className="min-w-0 w-full">{header}</div>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2">
         {onLanguageChange && (
           <LanguageSelect
             value={language}

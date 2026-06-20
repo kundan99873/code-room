@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, Pencil, FileCode2, Check } from "lucide-react";
+import { Plus, Trash2, Edit2, FileCode2, Check } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,6 @@ import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { LANGUAGES } from "@/lib/languages";
-import { LANG_COLORS } from "@/lib/utils";
 
 export type RoomFile = {
     id: string;
@@ -29,6 +28,110 @@ type Props = {
     onDelete: (id: string) => Promise<void>;
     canEdit: boolean;
 };
+
+function getFileIcon(fileName: string) {
+    const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
+    switch (ext) {
+        case "js":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-amber-500/10 text-amber-500 font-mono text-[9px] font-bold border border-amber-500/20">
+                    JS
+                </div>
+            );
+        case "ts":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-blue-500/10 text-blue-500 font-mono text-[9px] font-bold border border-blue-500/20">
+                    TS
+                </div>
+            );
+        case "py":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-emerald-500/10 text-emerald-500 font-mono text-[9px] font-bold border border-emerald-500/20">
+                    PY
+                </div>
+            );
+        case "java":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-orange-500/10 text-orange-500 font-mono text-[9px] font-bold border border-orange-500/20">
+                    JV
+                </div>
+            );
+        case "go":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-cyan-500/10 text-cyan-500 font-mono text-[9px] font-bold border border-cyan-500/20">
+                    GO
+                </div>
+            );
+        case "rs":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-rose-500/10 text-rose-500 font-mono text-[9px] font-bold border border-rose-500/20">
+                    RS
+                </div>
+            );
+        case "cpp":
+        case "h":
+        case "hpp":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-indigo-500/10 text-indigo-500 font-mono text-[9px] font-bold border border-indigo-500/20">
+                    C++
+                </div>
+            );
+        case "cs":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-purple-500/10 text-purple-500 font-mono text-[9px] font-bold border border-purple-500/20">
+                    C#
+                </div>
+            );
+        case "php":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-violet-500/10 text-violet-500 font-mono text-[9px] font-bold border border-violet-500/20">
+                    PHP
+                </div>
+            );
+        case "rb":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-red-500/10 text-red-500 font-mono text-[9px] font-bold border border-red-500/20">
+                    RB
+                </div>
+            );
+        case "sh":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-zinc-500/10 text-zinc-400 font-mono text-[9px] font-bold border border-zinc-500/20">
+                    SH
+                </div>
+            );
+        case "html":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-orange-600/10 text-orange-500 font-mono text-[9px] font-bold border border-orange-600/20">
+                    HT
+                </div>
+            );
+        case "css":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-sky-500/10 text-sky-400 font-mono text-[9px] font-bold border border-sky-500/20">
+                    CS
+                </div>
+            );
+        case "sql":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-teal-500/10 text-teal-400 font-mono text-[9px] font-bold border border-teal-500/20">
+                    SQL
+                </div>
+            );
+        case "json":
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-amber-400/10 text-amber-500 font-mono text-[9px] font-bold border border-amber-400/20">
+                    {"{}"}
+                </div>
+            );
+        default:
+            return (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground font-mono text-[9px] font-bold border border-border">
+                    TX
+                </div>
+            );
+    }
+}
 
 export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDelete, canEdit }: Props) {
     const [creating, setCreating] = useState(false);
@@ -116,7 +219,6 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
                     <AnimatePresence initial={false}>
                         {files.map((f) => {
                             const active = f.id === activeId;
-                            const color = LANG_COLORS[f.language] ?? "#94a3b8";
                             const isRenaming = renamingId === f.id;
                             return (
                                 <motion.div
@@ -131,7 +233,7 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
                                         }`}
                                 >
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                                        {getFileIcon(f.name)}
                                         {isRenaming ? (
                                             <form
                                                 onSubmit={(e) => { e.preventDefault(); submitRename(f.id); }}
@@ -161,20 +263,20 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
                                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0 ml-1">
                                             <button
                                                 onClick={() => { setRenamingId(f.id); setRenameValue(f.name); }}
-                                                className="p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                                                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
                                                 title="Rename"
                                             >
-                                                <Pencil className="h-3 w-3" />
+                                                <Edit2 className="h-3.5 w-3.5" />
                                             </button>
                                             {files.length > 1 && (
                                                 <button
                                                     onClick={() => {
                                                         if (confirm(`Delete file "${f.name}"?`)) onDelete(f.id);
                                                     }}
-                                                    className="p-0.5 rounded text-muted-foreground hover:text-destructive hover:bg-muted transition cursor-pointer"
+                                                    className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-muted transition cursor-pointer"
                                                     title="Delete"
                                                 >
-                                                    <X className="h-3 w-3" />
+                                                    <Trash2 className="h-3.5 w-3.5" />
                                                 </button>
                                             )}
                                         </div>

@@ -1,7 +1,9 @@
 import { Code2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/lib/auth";
 
 export default function Footer() {
+  const { user } = useAuth();
   return (
     <footer className="border-t border-border bg-card/40">
       <div className="mx-auto max-w-7xl px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -20,9 +22,15 @@ export default function Footer() {
           <Link to="/json" className="hover:text-foreground">
             JSON Tools
           </Link>
-          <Link to="/auth" className="hover:text-foreground">
-            Sign in
-          </Link>
+          {user ? (
+            <Link to="/dashboard" className="hover:text-foreground">
+              Dashboard
+            </Link>
+          ) : (
+            <Link to="/auth" className="hover:text-foreground">
+              Sign in
+            </Link>
+          )}
           {/* <a
             href="https://github.com"
             target="_blank"

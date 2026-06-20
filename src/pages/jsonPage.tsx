@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Editor from "@monaco-editor/react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Link } from "react-router-dom";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -20,6 +21,7 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowLeftRight,
+  ArrowLeft,
 } from "lucide-react";
 
 const SAMPLE = `{
@@ -200,16 +202,21 @@ export default function JsonPage() {
 
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-background">
-      <div className="border-b border-border bg-card/40">
-        <div className="mx-auto max-w-7xl px-4 py-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-semibold flex items-center gap-2">
-              <FileJson className="h-5 w-5 text-primary" /> JSON Toolkit
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Format, validate, minify, tree-view, and convert JSON — instantly,
-              in your browser.
-            </p>
+      <div className="border-b border-border bg-card">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <Link to="/" className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition hover:text-foreground hover:border-primary/40" title="Back to Home">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <div>
+              <h1 className="text-xl font-semibold flex items-center gap-2">
+                <FileJson className="h-5 w-5 text-primary" /> JSON Toolkit
+              </h1>
+              {/* <p className="text-sm text-muted-foreground">
+                Format, validate, minify, tree-view, and convert JSON — instantly,
+                in your browser.
+              </p> */}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -236,11 +243,10 @@ export default function JsonPage() {
       </div>
 
       <div
-        className={`px-4 py-2 text-sm border-b border-border flex items-center gap-2 ${
-          status.ok
-            ? "bg-emerald-500/5 text-emerald-600 dark:text-emerald-400"
-            : "bg-rose-500/5 text-rose-600 dark:text-rose-400"
-        }`}
+        className={`px-4 py-2 text-sm border-b border-border flex items-center gap-2 ${status.ok
+          ? "bg-emerald-500/5 text-emerald-600 dark:text-emerald-400"
+          : "bg-rose-500/5 text-rose-600 dark:text-rose-400"
+          }`}
       >
         {status.ok ? (
           <CheckCircle2 className="h-4 w-4" />
@@ -252,6 +258,7 @@ export default function JsonPage() {
 
       <div className="flex-1 min-h-0 overflow-hidden p-2 md:p-3">
         <ResizablePanelGroup
+          key={isMobile ? "vertical" : "horizontal"}
           direction={isMobile ? "vertical" : "horizontal"}
           className="h-full overflow-hidden rounded-lg border border-border bg-card shadow-sm"
         >

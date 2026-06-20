@@ -13,6 +13,7 @@ type Room = {
     is_public: boolean;
     updated_at: string;
     created_at: string;
+    db_id?: string;
 };
 
 const LANG_ACCENT: Record<string, string> = {
@@ -63,8 +64,8 @@ export function RoomCard({
                 transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.15) }}
                 className="group relative rounded-xl border border-border bg-card p-3.5 hover:border-primary/40 hover:shadow-sm transition"
             >
-                <Link to={`/room/${room.id}`} className="absolute inset-0" aria-label={room.name} />
-                <div className="relative flex items-center gap-3">
+                <Link to={`/room/${room.id}`} className="absolute inset-0 z-10" aria-label={room.name} />
+                <div className="flex items-center gap-3">
                     <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br ${accent} text-white`}>
                         <Code2 className="h-4 w-4" />
                     </div>
@@ -98,16 +99,16 @@ export function RoomCard({
             whileHover={{ y: -2 }}
             className="group relative rounded-xl border border-border bg-card p-4 hover:border-primary/40 hover:shadow-md transition"
         >
-            <Link to={`/room/${room.id}`} className="absolute inset-0 rounded-xl" aria-label={room.name} />
+            <Link to={`/room/${room.id}`} className="absolute inset-0 z-10 rounded-xl" aria-label={room.name} />
 
-            <div className="relative flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                     <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-gradient-to-br ${accent} text-white shadow-sm`}>
                         <Code2 className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
                         <h3 className="font-medium text-sm leading-tight truncate">{room.name}</h3>
-                        <p className="text-[11px] text-muted-foreground mt-0.5 font-mono truncate">#{room.id.slice(0, 8)}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 font-mono truncate">#{room.db_id ? room.db_id.slice(0, 8) : room.id.slice(0, 8)}</p>
                     </div>
                 </div>
                 <RoomMenu
@@ -119,7 +120,7 @@ export function RoomCard({
                 />
             </div>
 
-            <div className="relative mt-3 flex items-center gap-1.5 flex-wrap">
+            <div className="mt-3 flex items-center gap-1.5 flex-wrap">
                 <span className="text-[11px] font-medium px-1.5 py-0.5 rounded bg-muted text-foreground/80">
                     {langLabel}
                 </span>
@@ -130,8 +131,7 @@ export function RoomCard({
                     </span>
                 )}
             </div>
-
-            <div className="relative mt-4 flex items-center justify-between text-xs text-muted-foreground">
+            <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                     <Clock className="h-3 w-3" /> {timeAgo(room.updated_at)}
                 </span>

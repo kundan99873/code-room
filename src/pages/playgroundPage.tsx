@@ -2,6 +2,7 @@ import { CodeRunner } from "@/components/pages/codeRunner/codeRunner";
 import { starter } from "@/lib/languages";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { ArrowLeft, Sparkles } from "lucide-react";
 
 export default function PlaygroundPage() {
   const [language, setLanguage] = useState("javascript");
@@ -13,25 +14,29 @@ export default function PlaygroundPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen overflow-hidden flex flex-col bg-background">
       <CodeRunner
         value={code}
         language={language}
         onChange={setCode}
         onLanguageChange={onLang}
         header={
-          <div className="text-sm">
-            <span className="font-semibold">Playground</span>
-            <span className="text-muted-foreground ml-2">
-              — no login needed.{" "}
-              <Link to="/auth" className="text-primary hover:underline">
-                Sign in
-              </Link>{" "}
-              to create a room.
-            </span>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition hover:text-foreground hover:border-primary/40"
+              title="Back to Home"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <div>
+              <h1 className="text-xl font-semibold flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" /> Playground
+              </h1>
+            </div>
           </div>
         }
-        heightClass="h-[calc(100vh-3.5rem)]"
+        heightClass="h-full flex-1"
       />
     </div>
   );

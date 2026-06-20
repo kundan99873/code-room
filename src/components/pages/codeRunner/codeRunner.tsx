@@ -260,6 +260,7 @@ export function CodeRunner({
 
       <div className="flex-1 min-h-0 p-2 md:p-3">
         <ResizablePanelGroup
+          key={isMobile ? "vertical" : "horizontal"}
           direction={isMobile ? "vertical" : "horizontal"}
           className="h-full w-full overflow-hidden rounded-lg border border-border bg-card shadow-sm"
         >
