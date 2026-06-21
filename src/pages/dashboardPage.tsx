@@ -237,14 +237,14 @@ export default function Dashboard() {
                         </div>
 
                         {/* Join */}
-                        <div className="flex gap-2">
-                            <div className="relative">
+                        <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto">
+                            <div className="relative flex-1 sm:flex-initial">
                                 <Link2 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Paste room ID…"
                                     value={joinId}
                                     onChange={(e) => setJoinId(e.target.value)}
-                                    className="pl-9 h-11 w-48 md:w-64 bg-background/60"
+                                    className="pl-9 h-11 w-full sm:w-40 md:w-64 bg-background/60"
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter" && joinId.trim()) {
                                             navigate("/room/" + joinId.trim());
@@ -254,7 +254,7 @@ export default function Dashboard() {
                             </div>
                             <Button
                                 variant="outline"
-                                className="h-11 cursor-pointer"
+                                className="h-11 cursor-pointer flex-1 sm:flex-initial"
                                 onClick={() => joinId.trim() && navigate("/room/" + joinId.trim())}
                             >
                                 Join <ArrowRight className="ml-1 h-4 w-4" />
@@ -262,7 +262,7 @@ export default function Dashboard() {
 
                             <Dialog open={open} onOpenChange={setOpen}>
                                 <DialogTrigger asChild>
-                                    <Button className="h-11 gap-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 text-white border-0 shadow-[0_8px_30px_-10px_hsl(265_80%_60%)] hover:shadow-[0_12px_40px_-10px_hsl(265_80%_60%)] hover:scale-[1.02] transition cursor-pointer">
+                                    <Button className="h-11 gap-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 text-white border-0 shadow-[0_8px_30px_-10px_hsl(265_80%_60%)] hover:shadow-[0_12px_40px_-10px_hsl(265_80%_60%)] hover:scale-[1.02] transition cursor-pointer w-full sm:w-auto">
                                         <Plus className="h-4 w-4" /> New Room
                                     </Button>
                                 </DialogTrigger>

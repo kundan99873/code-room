@@ -209,13 +209,12 @@ export default function JsonPage() {
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <div>
-              <h1 className="text-xl font-semibold flex items-center gap-2">
-                <FileJson className="h-5 w-5 text-primary" /> JSON Toolkit
+              <h1 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+                <FileJson className="h-5 w-5 text-primary shrink-0" />
+                <span>
+                  <span className="hidden sm:inline">JSON </span>Toolkit
+                </span>
               </h1>
-              {/* <p className="text-sm text-muted-foreground">
-                Format, validate, minify, tree-view, and convert JSON — instantly,
-                in your browser.
-              </p> */}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -225,18 +224,23 @@ export default function JsonPage() {
               onClick={() =>
                 apply((s) => JSON.stringify(JSON.parse(s), null, 2))
               }
+              title="Beautify"
             >
-              <Wand2 className="h-4 w-4 mr-1.5" /> Beautify
+              <Wand2 className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Beautify</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => apply((s) => JSON.stringify(JSON.parse(s)))}
+              title="Minify"
             >
-              <Minimize className="h-4 w-4 mr-1.5" /> Minify
+              <Minimize className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Minify</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setSrc(SAMPLE)}>
-              <ArrowLeftRight className="h-4 w-4 mr-1.5" /> Sample
+            <Button variant="outline" size="sm" onClick={() => setSrc(SAMPLE)} title="Sample">
+              <ArrowLeftRight className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Sample</span>
             </Button>
           </div>
         </div>
@@ -256,14 +260,10 @@ export default function JsonPage() {
         <span className="font-mono">{status.message}</span>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-hidden p-2 md:p-3">
-        <ResizablePanelGroup
-          key={isMobile ? "vertical" : "horizontal"}
-          direction={isMobile ? "vertical" : "horizontal"}
-          className="h-full overflow-hidden rounded-lg border border-border bg-card shadow-sm"
-        >
-          <ResizablePanel defaultSize={50} minSize={25}>
-            <div className="h-full flex flex-col">
+      <div className="flex-1 min-h-0 p-2 md:p-3 overflow-y-auto">
+        {isMobile ? (
+          <div className="flex flex-col gap-3 h-full pb-6">
+            <div className="h-[400px] border border-border rounded-lg overflow-hidden bg-card shrink-0 flex flex-col">
               <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30 text-xs">
                 <span className="font-medium">Input JSON</span>
                 <div className="flex gap-1">
@@ -311,36 +311,36 @@ export default function JsonPage() {
                 )}
               </div>
             </div>
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={50} minSize={25}>
-            <div className="h-full flex flex-col">
+
+            <div className="h-[400px] border border-border rounded-lg overflow-hidden bg-card shrink-0 flex flex-col">
               <Tabs
                 value={tab}
                 onValueChange={setTab}
                 className="flex-1 flex flex-col min-h-0"
               >
-                <div className="px-3 py-2 border-b border-border bg-muted/30 flex items-center justify-between gap-2">
-                  <TabsList className="h-8">
-                    <TabsTrigger value="format" className="text-xs">
-                      Pretty
-                    </TabsTrigger>
-                    <TabsTrigger value="minify" className="text-xs">
-                      Minified
-                    </TabsTrigger>
-                    <TabsTrigger value="stringify" className="text-xs">
-                      Stringify
-                    </TabsTrigger>
-                    <TabsTrigger value="tree" className="text-xs">
-                      <ListTree className="h-3.5 w-3.5 mr-1" /> Tree
-                    </TabsTrigger>
-                    <TabsTrigger value="yaml" className="text-xs">
-                      YAML
-                    </TabsTrigger>
-                    <TabsTrigger value="xml" className="text-xs">
-                      XML
-                    </TabsTrigger>
-                  </TabsList>
+                <div className="px-3 py-2 border-b border-border bg-muted/30 flex items-center justify-between gap-2 min-w-0 w-full">
+                  <div className="overflow-x-auto scrollbar-none flex-1 min-w-0 pr-2">
+                    <TabsList className="h-8 flex-nowrap min-w-max">
+                      <TabsTrigger value="format" className="text-xs">
+                        Pretty
+                      </TabsTrigger>
+                      <TabsTrigger value="minify" className="text-xs">
+                        Minified
+                      </TabsTrigger>
+                      <TabsTrigger value="stringify" className="text-xs">
+                        Stringify
+                      </TabsTrigger>
+                      <TabsTrigger value="tree" className="text-xs">
+                        <ListTree className="h-3.5 w-3.5 mr-1" /> Tree
+                      </TabsTrigger>
+                      <TabsTrigger value="yaml" className="text-xs">
+                        YAML
+                      </TabsTrigger>
+                      <TabsTrigger value="xml" className="text-xs">
+                        XML
+                      </TabsTrigger>
+                    </TabsList>
+                  </div>
                   <div className="flex gap-1">
                     <Button
                       size="sm"
@@ -415,8 +415,170 @@ export default function JsonPage() {
                 ))}
               </Tabs>
             </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          </div>
+        ) : (
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="h-full overflow-hidden rounded-lg border border-border bg-card shadow-sm"
+          >
+            <ResizablePanel defaultSize={50} minSize={25}>
+              <div className="h-full flex flex-col">
+                <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30 text-xs">
+                  <span className="font-medium">Input JSON</span>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2"
+                      onClick={() => copy(src)}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2"
+                      onClick={() => download(src, "json")}
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex-1 min-h-0">
+                  {mounted ? (
+                    <Editor
+                      height="100%"
+                      language="json"
+                      value={src}
+                      onChange={(v) => setSrc(v ?? "")}
+                      theme={resolved === "dark" ? "vs-dark" : "vs-light"}
+                      options={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 14,
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        padding: { top: 12 },
+                        tabSize: 2,
+                        automaticLayout: true,
+                        wordWrap: "on",
+                      }}
+                    />
+                  ) : (
+                    <div className="h-full grid place-items-center text-xs text-muted-foreground">
+                      Loading editor…
+                    </div>
+                  )}
+                </div>
+              </div>
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={50} minSize={25}>
+              <div className="h-full flex flex-col">
+                <Tabs
+                  value={tab}
+                  onValueChange={setTab}
+                  className="flex-1 flex flex-col min-h-0"
+                >
+                  <div className="px-3 py-2 border-b border-border bg-muted/30 flex items-center justify-between gap-2 min-w-0 w-full">
+                    <div className="overflow-x-auto scrollbar-none flex-1 min-w-0 pr-2">
+                      <TabsList className="h-8 flex-nowrap min-w-max">
+                        <TabsTrigger value="format" className="text-xs">
+                          Pretty
+                        </TabsTrigger>
+                        <TabsTrigger value="minify" className="text-xs">
+                          Minified
+                        </TabsTrigger>
+                        <TabsTrigger value="stringify" className="text-xs">
+                          Stringify
+                        </TabsTrigger>
+                        <TabsTrigger value="tree" className="text-xs">
+                          <ListTree className="h-3.5 w-3.5 mr-1" /> Tree
+                        </TabsTrigger>
+                        <TabsTrigger value="yaml" className="text-xs">
+                          YAML
+                        </TabsTrigger>
+                        <TabsTrigger value="xml" className="text-xs">
+                          XML
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2"
+                        onClick={() => copy(other)}
+                        disabled={!parsed}
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2"
+                        onClick={() =>
+                          download(
+                            other,
+                            outLang === "plaintext" ? "txt" : outLang,
+                          )
+                        }
+                        disabled={!parsed}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <TabsContent
+                    value="tree"
+                    className="flex-1 min-h-0 m-0 overflow-auto p-4 bg-[#0d1117]"
+                  >
+                    {parsed ? (
+                      <JsonTree data={parsed} />
+                    ) : (
+                      <p className="text-sm text-rose-400 font-mono">
+                        Fix the JSON to view tree.
+                      </p>
+                    )}
+                  </TabsContent>
+
+                  {(
+                    ["format", "minify", "stringify", "yaml", "xml"] as const
+                  ).map((id) => (
+                    <TabsContent
+                      key={id}
+                      value={id}
+                      className="flex-1 min-h-0 m-0"
+                    >
+                      {mounted ? (
+                        <Editor
+                          height="100%"
+                          language={outLang}
+                          value={parsed ? other : status.message}
+                          theme={resolved === "dark" ? "vs-dark" : "vs-light"}
+                          options={{
+                            readOnly: true,
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontSize: 14,
+                            minimap: { enabled: false },
+                            scrollBeyondLastLine: false,
+                            padding: { top: 12 },
+                            wordWrap: "on",
+                            automaticLayout: true,
+                          }}
+                        />
+                      ) : (
+                        <div className="h-full grid place-items-center text-xs text-muted-foreground">
+                          Loading output…
+                        </div>
+                      )}
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        )}
       </div>
     </div>
   );

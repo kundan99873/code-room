@@ -417,48 +417,64 @@ function PenPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <h1 className="text-xl font-semibold flex items-center gap-2">
-              <Code2 className="h-5 w-5 text-primary" /> Web Playground
+            <h1 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+              <Code2 className="h-5 w-5 text-primary shrink-0" />
+              <span>
+                <span className="hidden sm:inline">Web </span>Playground
+              </span>
             </h1>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none">
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none" title="Auto-run">
             <input
               type="checkbox"
               className="accent-primary"
               checked={autoRun}
               onChange={(e) => setAutoRun(e.target.checked)}
             />
-            Auto-run
+            <span className="hidden sm:inline">Auto-run</span>
           </label>
           <LibrariesPopover
             cssLibs={cssLibs} jsLibs={jsLibs}
             setCssLibs={setCssLibs} setJsLibs={setJsLibs}
           />
-          <Button size="sm" variant="outline" onClick={resetAll} className="gap-1.5 h-9">
-            <Eraser className="h-4 w-4" /> Reset
+          <Button size="sm" variant="outline" onClick={resetAll} className="gap-1.5 h-9" title="Reset">
+            <Eraser className="h-4 w-4" />
+            <span className="hidden sm:inline">Reset</span>
           </Button>
-          <Button size="sm" variant="outline" onClick={downloadAll} className="gap-1.5 h-9">
-            <Download className="h-4 w-4" /> Download
+          <Button size="sm" variant="outline" onClick={downloadAll} className="gap-1.5 h-9" title="Download">
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Download</span>
           </Button>
-          <Button size="sm" onClick={buildAndRun} className="gap-1.5 h-9">
-            <Play className="h-4 w-4" /> Run
+          <Button size="sm" onClick={buildAndRun} className="gap-1.5 h-9" title="Run (⌘/Ctrl+Enter)">
+            <Play className="h-4 w-4" />
+            <span className="hidden sm:inline">Run</span>
             <kbd className="hidden md:inline ml-1 text-[10px] opacity-70">⌘↵</kbd>
           </Button>
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-hidden p-2 md:p-3">
-        <ResizablePanelGroup
-          key={isMobile ? "vertical" : "horizontal"}
-          direction={isMobile ? "vertical" : "horizontal"}
-          className="h-full w-full overflow-hidden rounded-lg border border-border bg-card shadow-sm"
-        >
-          <ResizablePanel defaultSize={isMobile ? 55 : 50} minSize={25}>{editorBlock}</ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={isMobile ? 45 : 50} minSize={25}>{previewBlock}</ResizablePanel>
-        </ResizablePanelGroup>
+      <div className="flex-1 min-h-0 p-2 md:p-3 overflow-y-auto">
+        {isMobile ? (
+          <div className="flex flex-col gap-3 h-full pb-6">
+            <div className="h-[400px] border border-border rounded-lg overflow-hidden bg-card shrink-0">
+              {editorBlock}
+            </div>
+            <div className="h-[400px] border border-border rounded-lg overflow-hidden bg-card shrink-0">
+              {previewBlock}
+            </div>
+          </div>
+        ) : (
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="h-full w-full overflow-hidden rounded-lg border border-border bg-card shadow-sm"
+          >
+            <ResizablePanel defaultSize={50} minSize={25}>{editorBlock}</ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={50} minSize={25}>{previewBlock}</ResizablePanel>
+          </ResizablePanelGroup>
+        )}
       </div>
     </div>
   );
@@ -478,8 +494,9 @@ function LibrariesPopover({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button size="sm" variant="outline" className="gap-1.5 h-9">
-          <Library className="h-4 w-4" /> Libraries
+        <Button size="sm" variant="outline" className="gap-1.5 h-9" title="Libraries">
+          <Library className="h-4 w-4" />
+          <span className="hidden sm:inline">Libraries</span>
           {total > 0 && (
             <span className="ml-1 rounded bg-primary/15 text-primary px-1.5 text-[10px] font-semibold">{total}</span>
           )}

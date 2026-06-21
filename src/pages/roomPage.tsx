@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth";
 import { RoomMembersPanel } from "@/components/RoomMembersPanel";
+import { useIsMobile } from "@/hooks/useMobile";
 import { CodeRunner } from "@/components/pages/codeRunner/codeRunner";
 import { FileTabs, type RoomFile } from "@/components/pages/codeRunner/fileTabs";
 import { RoomHeader } from "@/components/pages/room/roomHeader";
@@ -56,6 +57,7 @@ export default function RoomPage() {
     const { user } = useAuth();
     const nav = useNavigate();
     const queryClient = useQueryClient();
+    const isMobile = useIsMobile();
     const [access, setAccess] = useState<AccessState>({ kind: "loading" });
     const [connected, setConnected] = useState(false);
     const [presence, setPresence] = useState(1);
@@ -577,14 +579,32 @@ export default function RoomPage() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.08, duration: 0.35, ease: "easeOut" }}
-                className="flex-1 min-h-0 bg-muted/20 flex"
+                className="flex-1 min-h-0 bg-muted/20 flex relative"
             >
+                {/* Mobile overlay backdrop */}
+                {isMobile && (filesPanelOpen || panelOpen) && (
+                    <div
+                        className="absolute inset-0 bg-background/55 backdrop-blur-xs z-10 cursor-pointer transition-opacity"
+                        onClick={() => {
+                            setFilesPanelOpen(false);
+                            setPanelOpen(false);
+                        }}
+                    />
+                )}
+
                 {filesPanelOpen && (
-                    <div className="shrink-0 animate-in slide-in-from-left duration-200">
+                    <div className={`shrink-0 animate-in slide-in-from-left duration-200 h-full border-r border-border ${
+                        isMobile ? "absolute inset-y-0 left-0 z-20 shadow-2xl bg-card" : "relative"
+                    }`}>
                         <FileTabs
                             files={files}
                             activeId={activeFileId}
-                            onSelect={setActiveFileId}
+                            onSelect={(id) => {
+                                setActiveFileId(id);
+                                if (isMobile) {
+                                    setFilesPanelOpen(false);
+                                }
+                            }}
                             onCreate={createFile}
                             onRename={renameFile}
                             onDelete={deleteFile}
@@ -640,7 +660,9 @@ export default function RoomPage() {
                     </div>
                 </div>
                 {panelOpen && (
-                    <div className="hidden md:block w-72 lg:w-80 shrink-0 animate-in slide-in-from-right duration-200">
+                    <div className={`shrink-0 animate-in slide-in-from-right duration-200 h-full w-72 lg:w-80 border-l border-border bg-card ${
+                        isMobile ? "absolute inset-y-0 right-0 z-20 shadow-2xl bg-card" : "relative"
+                    }`}>
                         <RoomMembersPanel
                             roomId={room.id}
                             isOwner={room.owner_id === user?.id || room.owner_id === user?._id}

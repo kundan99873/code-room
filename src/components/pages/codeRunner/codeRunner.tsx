@@ -258,16 +258,26 @@ export function CodeRunner({
         onRun={run}
       />
 
-      <div className="flex-1 min-h-0 p-2 md:p-3">
-        <ResizablePanelGroup
-          key={isMobile ? "vertical" : "horizontal"}
-          direction={isMobile ? "vertical" : "horizontal"}
-          className="h-full w-full overflow-hidden rounded-lg border border-border bg-card shadow-sm"
-        >
-          <ResizablePanel defaultSize={isMobile ? 58 : 55} minSize={25}>{editorPanel}</ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={isMobile ? 42 : 45} minSize={20}>{outputPanel}</ResizablePanel>
-        </ResizablePanelGroup>
+      <div className="flex-1 min-h-0 p-2 md:p-3 overflow-y-auto">
+        {isMobile ? (
+          <div className="flex flex-col gap-3 h-full pb-6">
+            <div className="h-[400px] border border-border rounded-lg overflow-hidden bg-card shrink-0">
+              {editorPanel}
+            </div>
+            <div className="h-[350px] border border-border rounded-lg overflow-hidden bg-card shrink-0">
+              {outputPanel}
+            </div>
+          </div>
+        ) : (
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="h-full w-full overflow-hidden rounded-lg border border-border bg-card shadow-sm"
+          >
+            <ResizablePanel defaultSize={55} minSize={25}>{editorPanel}</ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={45} minSize={20}>{outputPanel}</ResizablePanel>
+          </ResizablePanelGroup>
+        )}
       </div>
     </div>
   );
