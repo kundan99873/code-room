@@ -1,15 +1,69 @@
 import { useState } from "react";
-import { Code2, LogOut, Menu, X } from "lucide-react";
+import { Code2, LogOut, Menu, X, Key } from "lucide-react";
 import { ThemeToggle } from "./themeToggle";
 import { Link } from "react-router-dom";
 import CustomNavLink from "./customNavLink";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "motion/react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { changePasswordRequest } from "@/api/auth";
+import { toast } from "react-hot-toast";
 
 export function Navbar() {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [changePwOpen, setChangePwOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [isChangingPw, setIsChangingPw] = useState(false);
+
+  const handleOpenChange = (open: boolean) => {
+    setChangePwOpen(open);
+    if (!open) {
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    setIsChangingPw(true);
+    try {
+      await changePasswordRequest({
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      toast.success("Password changed successfully!");
+      setChangePwOpen(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to change password");
+    } finally {
+      setIsChangingPw(false);
+    }
+  };
 
   return (
     <header className="sticky top-3 z-30 px-3 sm:px-4">
@@ -38,6 +92,82 @@ export function Navbar() {
                   {user.email}
                 </span>
                 <ThemeToggle />
+                <Dialog open={changePwOpen} onOpenChange={handleOpenChange}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full cursor-pointer hover:bg-accent hidden md:inline-flex"
+                      aria-label="Change Password"
+                    >
+                      <Key className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[420px] border border-border bg-card/95 backdrop-blur-xl p-6 rounded-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-lg font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-fuchsia-400 bg-clip-text text-transparent flex items-center gap-2">
+                        <Key className="h-5 w-5 text-indigo-400" /> Change Password
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleChangePassword} className="space-y-4 mt-2">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="current-pw" className="text-xs">Current Password</Label>
+                        <Input
+                          id="current-pw"
+                          type="password"
+                          required
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="h-10"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="new-pw" className="text-xs">New Password</Label>
+                        <Input
+                          id="new-pw"
+                          type="password"
+                          required
+                          minLength={6}
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="At least 6 characters"
+                          className="h-10"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="confirm-new-pw" className="text-xs">Confirm New Password</Label>
+                        <Input
+                          id="confirm-new-pw"
+                          type="password"
+                          required
+                          minLength={6}
+                          value={confirmNewPassword}
+                          onChange={(e) => setConfirmNewPassword(e.target.value)}
+                          placeholder="Confirm new password"
+                          className="h-10"
+                        />
+                      </div>
+                      <DialogFooter className="mt-6 flex gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => setChangePwOpen(false)}
+                          className="h-10 animate-none hover:bg-muted"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={isChangingPw}
+                          className="h-10 px-5 bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white border-0 shadow-md hover:opacity-95 cursor-pointer font-medium"
+                        >
+                          {isChangingPw ? "Updating..." : "Update Password"}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -123,15 +253,26 @@ export function Navbar() {
               )}
               
               {user ? (
-                <button
-                  onClick={async () => {
-                    setMobileMenuOpen(false);
-                    await logout();
-                  }}
-                  className="mt-2 flex w-full items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-destructive/10 text-destructive hover:text-destructive transition cursor-pointer"
-                >
-                  <LogOut className="h-4 w-4" /> Sign out
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setChangePwOpen(true);
+                    }}
+                    className="mt-2 flex w-full items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-accent transition cursor-pointer"
+                  >
+                    <Key className="h-4 w-4" /> Change password
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setMobileMenuOpen(false);
+                      await logout();
+                    }}
+                    className="mt-1 flex w-full items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-destructive/10 text-destructive hover:text-destructive transition cursor-pointer"
+                  >
+                    <LogOut className="h-4 w-4" /> Sign out
+                  </button>
+                </>
               ) : (
                 <Link
                   to="/auth"

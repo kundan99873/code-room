@@ -6,6 +6,7 @@ import PenPage from "@/pages/penPage";
 import PlaygroundPage from "@/pages/playgroundPage";
 import DashboardPage from "@/pages/dashboardPage";
 import RoomPage from "@/pages/roomPage";
+import ResetPasswordPage from "@/pages/resetPasswordPage";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 
@@ -86,6 +87,10 @@ const router = createBrowserRouter([
           {
             path: "/auth",
             element: <AuthPage />,
+          },
+          {
+            path: "/reset-password",
+            element: <ResetPasswordPage />,
           },
         ],
       },

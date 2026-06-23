@@ -1,42 +1,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Code2, Sparkles, Eye, EyeOff, Loader2 } from "lucide-react";
-import { useAuth } from "@/lib/auth";
+import { Code2 } from "lucide-react";
+import SignInForm from "@/components/pages/auth/signInForm";
+import SignUpForm from "@/components/pages/auth/signUpForm";
+import ForgotPasswordForm from "@/components/pages/auth/forgotPasswordForm";
 
 export default function AuthPage() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [showPw, setShowPw] = useState(false);
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
 
-  const { login, register, isLoggingIn, isRegistering } = useAuth();
-  const busy = isLoggingIn || isRegistering;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (mode === "signin") {
-      try {
-        await login({ email, password });
-      } catch (err) {
-        // errors handled by mutation toast
-      }
-    } else {
-      try {
-        await register({ name, email, password });
-        setMode("signin");
-        setPassword("");
-      } catch (err) {
-        // errors handled by mutation toast
-      }
-    }
-  };
-
-  const google = async () => {};
+  const google = async () => { };
 
   const isSignin = mode === "signin";
+  const isForgot = mode === "forgot";
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-background px-4 py-10 overflow-hidden">
@@ -62,146 +37,76 @@ export default function AuthPage() {
               <Code2 className="h-5 w-5" />
             </div>
             <h1 className="mt-4 text-2xl font-semibold tracking-tight">
-              {isSignin ? "Welcome back" : "Create your account"}
+              {isForgot
+                ? "Reset your password"
+                : isSignin
+                  ? "Welcome back"
+                  : "Create your account"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {isSignin
-                ? "Sign in to continue to Coderoom"
-                : "Start collaborating in seconds"}
+              {isForgot
+                ? "We'll email you a link to reset your password"
+                : isSignin
+                  ? "Sign in to continue to Coderoom"
+                  : "Start collaborating in seconds"}
             </p>
           </div>
 
           {/* Tabs */}
-          <div className="mt-6 grid grid-cols-2 rounded-full bg-muted/70 p-1 text-sm">
-            {(["signin", "signup"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMode(m)}
-                className={`h-8 rounded-full transition font-medium ${
-                  mode === m
+          {!isForgot && (
+            <div className="mt-6 grid grid-cols-2 rounded-full bg-muted/70 p-1 text-sm">
+              {(["signin", "signup"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMode(m)}
+                  className={`h-8 rounded-full transition font-medium ${mode === m
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {m === "signin" ? "Sign in" : "Sign up"}
-              </button>
-            ))}
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-5 w-full h-10 rounded-lg bg-background hover:bg-accent font-medium"
-            onClick={google}
-            disabled={busy}
-          >
-            <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M21.35 11.1H12v3.2h5.35c-.23 1.4-1.65 4.1-5.35 4.1-3.2 0-5.85-2.65-5.85-5.9s2.65-5.9 5.85-5.9c1.85 0 3.05.78 3.75 1.45l2.55-2.45C16.6 4.05 14.5 3 12 3 6.95 3 2.9 7.05 2.9 12s4.05 9 9.1 9c5.25 0 8.7-3.7 8.7-8.9 0-.6-.05-1.05-.15-1.5z"
-              />
-            </svg>
-            Continue with Google
-          </Button>
-
-          <div className="flex items-center gap-3 my-5">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-[10px] text-muted-foreground uppercase tracking-[0.18em]">
-              or with email
-            </span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-3.5">
-            {!isSignin && (
-              <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-xs">
-                  Display name
-                </Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ada Lovelace"
-                  className="h-10 rounded-lg"
-                />
-              </div>
-            )}
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="h-10 rounded-lg"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-xs">
-                  Password
-                </Label>
-                {isSignin && (
-                  <button
-                    type="button"
-                    className="text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    Forgot?
-                  </button>
-                )}
-              </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPw ? "text" : "password"}
-                  required
-                  minLength={6}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  className="h-10 rounded-lg pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw((v) => !v)}
-                  className="absolute inset-y-0 right-0 grid place-items-center px-3 text-muted-foreground hover:text-foreground"
-                  aria-label={showPw ? "Hide password" : "Show password"}
+                    }`}
                 >
-                  {showPw ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {m === "signin" ? "Sign in" : "Sign up"}
                 </button>
-              </div>
+              ))}
             </div>
+          )}
 
-            <Button
-              type="submit"
-              disabled={busy}
-              className="w-full h-10 rounded-lg bg-linear-to-r from-indigo-500 via-violet-500 to-fuchsia-500 text-white border-0 shadow-[0_10px_30px_-10px_rgba(139,92,246,0.55)] hover:shadow-[0_14px_40px_-10px_rgba(139,92,246,0.7)] hover:opacity-95 transition"
-            >
-              {busy ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Please wait…
-                </>
-              ) : isSignin ? (
-                "Sign in"
-              ) : (
-                "Create account"
-              )}
-            </Button>
-          </form>
+          {!isForgot && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-5 w-full h-10 rounded-lg bg-background hover:bg-accent font-medium"
+                onClick={google}
+              >
+                <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M21.35 11.1H12v3.2h5.35c-.23 1.4-1.65 4.1-5.35 4.1-3.2 0-5.85-2.65-5.85-5.9s2.65-5.9 5.85-5.9c1.85 0 3.05.78 3.75 1.45l2.55-2.45C16.6 4.05 14.5 3 12 3 6.95 3 2.9 7.05 2.9 12s4.05 9 9.1 9c5.25 0 8.7-3.7 8.7-8.9 0-.6-.05-1.05-.15-1.5z"
+                  />
+                </svg>
+                Continue with Google
+              </Button>
 
-          <p className="mt-4 text-center text-[11px] text-muted-foreground inline-flex items-center justify-center gap-1 w-full">
-            <Sparkles className="h-3 w-3" /> Secured by Lovable Cloud
-          </p>
+              <div className="flex items-center gap-3 my-5">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-[0.18em]">
+                  or with email
+                </span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+            </>
+          )}
+
+          {mode === "signin" && (
+            <SignInForm onForgotPasswordClick={() => setMode("forgot")} />
+          )}
+          {mode === "signup" && (
+            <SignUpForm onSuccess={() => setMode("signin")} />
+          )}
+          {mode === "forgot" && (
+            <ForgotPasswordForm onBackToSignIn={() => setMode("signin")} />
+          )}
         </div>
 
         <p className="mt-5 text-center text-xs text-muted-foreground">

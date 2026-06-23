@@ -60,3 +60,42 @@ export const logoutRequest = async () => {
     throw new Error(result.message || "Failed to logout");
   }
 };
+
+export const forgotPasswordRequest = async (email: string) => {
+  const res = await apiFetch("/api/auth/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const result = await res.json();
+  if (!res.ok) {
+    throw new Error(result.message || "Failed to send reset link");
+  }
+  return result;
+};
+
+export const resetPasswordRequest = async (token: string, password: string) => {
+  const res = await apiFetch(`/api/auth/reset-password?token=${encodeURIComponent(token)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password }),
+  });
+  const result = await res.json();
+  if (!res.ok) {
+    throw new Error(result.message || "Failed to reset password");
+  }
+  return result;
+};
+
+export const changePasswordRequest = async (credentials: any) => {
+  const res = await apiFetch("/api/auth/change-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(credentials),
+  });
+  const result = await res.json();
+  if (!res.ok) {
+    throw new Error(result.message || "Failed to change password");
+  }
+  return result;
+};

@@ -120,11 +120,29 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
-    }
+  }
+  button, 
+  a,
+  select,
+  [role="button"],
+  [type="button"],
+  [type="submit"],
+  [type="reset"] {
+    cursor: pointer;
+  }
+  button:disabled,
+  a:disabled,
+  select:disabled,
+  [role="button"]:disabled,
+  [type="button"]:disabled,
+  [type="submit"]:disabled,
+  [type="reset"]:disabled {
+    cursor: not-allowed !important;
+  }
 }
