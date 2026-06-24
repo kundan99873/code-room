@@ -8,7 +8,10 @@ import ForgotPasswordForm from "@/components/pages/auth/forgotPasswordForm";
 export default function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
 
-  const google = async () => { };
+  const google = () => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+    window.location.href = `${backendUrl}/api/auth/google`;
+  };
 
   const isSignin = mode === "signin";
   const isForgot = mode === "forgot";

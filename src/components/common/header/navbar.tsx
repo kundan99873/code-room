@@ -109,63 +109,81 @@ export function Navbar() {
                         <Key className="h-5 w-5 text-indigo-400" /> Change Password
                       </DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleChangePassword} className="space-y-4 mt-2">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="current-pw" className="text-xs">Current Password</Label>
-                        <Input
-                          id="current-pw"
-                          type="password"
-                          required
-                          value={currentPassword}
-                          onChange={(e) => setCurrentPassword(e.target.value)}
-                          placeholder="••••••••"
-                          className="h-10"
-                        />
+                    {user?.provider === "google" ? (
+                      <div className="space-y-4 py-3 text-center">
+                        <p className="text-sm text-muted-foreground">
+                          Your account is authenticated via Google. You do not have a local password to change.
+                        </p>
+                        <div className="flex justify-end pt-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setChangePwOpen(false)}
+                            className="h-10 px-5 hover:bg-muted"
+                          >
+                            Close
+                          </Button>
+                        </div>
                       </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="new-pw" className="text-xs">New Password</Label>
-                        <Input
-                          id="new-pw"
-                          type="password"
-                          required
-                          minLength={6}
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="At least 6 characters"
-                          className="h-10"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="confirm-new-pw" className="text-xs">Confirm New Password</Label>
-                        <Input
-                          id="confirm-new-pw"
-                          type="password"
-                          required
-                          minLength={6}
-                          value={confirmNewPassword}
-                          onChange={(e) => setConfirmNewPassword(e.target.value)}
-                          placeholder="Confirm new password"
-                          className="h-10"
-                        />
-                      </div>
-                      <DialogFooter className="mt-6 flex gap-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => setChangePwOpen(false)}
-                          className="h-10 animate-none hover:bg-muted"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={isChangingPw}
-                          className="h-10 px-5 bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white border-0 shadow-md hover:opacity-95 cursor-pointer font-medium"
-                        >
-                          {isChangingPw ? "Updating..." : "Update Password"}
-                        </Button>
-                      </DialogFooter>
-                    </form>
+                    ) : (
+                      <form onSubmit={handleChangePassword} className="space-y-4 mt-2">
+                        <div className="space-y-1.5">
+                          <Label htmlFor="current-pw" className="text-xs">Current Password</Label>
+                          <Input
+                            id="current-pw"
+                            type="password"
+                            required
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            placeholder="••••••••"
+                            className="h-10"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="new-pw" className="text-xs">New Password</Label>
+                          <Input
+                            id="new-pw"
+                            type="password"
+                            required
+                            minLength={6}
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            placeholder="At least 6 characters"
+                            className="h-10"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="confirm-new-pw" className="text-xs">Confirm New Password</Label>
+                          <Input
+                            id="confirm-new-pw"
+                            type="password"
+                            required
+                            minLength={6}
+                            value={confirmNewPassword}
+                            onChange={(e) => setConfirmNewPassword(e.target.value)}
+                            placeholder="Confirm new password"
+                            className="h-10"
+                          />
+                        </div>
+                        <DialogFooter className="mt-6 flex gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setChangePwOpen(false)}
+                            className="h-10 animate-none hover:bg-muted"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={isChangingPw}
+                            className="h-10 px-5 bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white border-0 shadow-md hover:opacity-95 cursor-pointer font-medium"
+                          >
+                            {isChangingPw ? "Updating..." : "Update Password"}
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    )}
                   </DialogContent>
                 </Dialog>
                 <Button
