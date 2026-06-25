@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth";
 import { RoomMembersPanel } from "@/components/RoomMembersPanel";
+import { RoomChatPanel } from "@/components/RoomChatPanel";
 import { useIsMobile } from "@/hooks/useMobile";
 import { CodeRunner } from "@/components/pages/codeRunner/codeRunner";
 import { FileTabs, type RoomFile } from "@/components/pages/codeRunner/fileTabs";
@@ -60,11 +61,13 @@ export default function RoomPage() {
     const isMobile = useIsMobile();
     const [access, setAccess] = useState<AccessState>({ kind: "loading" });
     const [connected, setConnected] = useState(false);
+    const [socket, setSocket] = useState<Socket | null>(null);
     const [presence, setPresence] = useState(1);
     const [panelOpen, setPanelOpen] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : true);
     const [filesPanelOpen, setFilesPanelOpen] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 768 : true);
     const [files, setFiles] = useState<RoomFile[]>([]);
     const [activeFileId, setActiveFileId] = useState<string | null>(null);
+    const [activeRightTab, setActiveRightTab] = useState<"members" | "chat">("members");
     const skipNextRef = useRef(false);
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -82,14 +85,20 @@ export default function RoomPage() {
     const activeFileIdRef = useRef<string | null>(null);
     activeFileIdRef.current = activeFileId;
 
+    const panelOpenRef = useRef(panelOpen);
+    panelOpenRef.current = panelOpen;
+
+    const activeRightTabRef = useRef(activeRightTab);
+    activeRightTabRef.current = activeRightTab;
+
     const activeFile = useMemo(
         () => files.find((f) => f.id === activeFileId) ?? null,
         [files, activeFileId],
     );
 
     const { data: members = [] } = useQuery<any[]>({
-        queryKey: ["room-members", id],
-        queryFn: () => fetchRoomMembers(id!),
+        queryKey: ["room-members", access.kind === "ok" ? access.room.id : id],
+        queryFn: () => fetchRoomMembers(access.kind === "ok" ? access.room.id : id!),
         enabled: !!id && access.kind === "ok",
         refetchInterval: 5000,
     });
@@ -171,31 +180,39 @@ export default function RoomPage() {
         if ((access.kind !== "ok" && access.kind !== "request") || !user || !id) return;
 
         const socketUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.DEV ? "http://localhost:3000" : window.location.origin);
-        const socket = io(socketUrl, {
+        const socketInstance = io(socketUrl, {
             query: {
                 roomId: id,
             },
             transports: ["websocket", "polling"],
             withCredentials: true,
+            forceNew: true,
         });
 
-        socketRef.current = socket;
+        socketRef.current = socketInstance;
+        setSocket(socketInstance);
 
-        socket.on("connect", () => {
+        const onConnect = () => {
             setConnected(true);
-            socket.emit("join-room");
-        });
+            socketInstance.emit("join-room");
+        };
 
-        socket.on("disconnect", () => {
+        if (socketInstance.connected) {
+            onConnect();
+        }
+
+        socketInstance.on("connect", onConnect);
+
+        socketInstance.on("disconnect", () => {
             setConnected(false);
         });
 
-        socket.on("connect_error", async (err) => {
+        socketInstance.on("connect_error", async (err) => {
             console.error("Socket connection error:", err.message);
             if (err.message.includes("Authentication error")) {
                 try {
                     await fetchCurrentUser();
-                    socket.connect();
+                    socketInstance.connect();
                 } catch (refreshErr) {
                     toast.error("Session expired. Please log in again.");
                     nav("/auth");
@@ -204,7 +221,7 @@ export default function RoomPage() {
         });
 
         // Listen for active users list
-        socket.on("room-users", (data: { users: any[]; count: number }) => {
+        socketInstance.on("room-users", (data: { users: any[]; count: number }) => {
             setPresence(data.count);
             setOnlineUsers(data.users);
 
@@ -224,7 +241,7 @@ export default function RoomPage() {
         });
 
         // Listen for real-time code changes from other users
-        socket.on("code-update", (data: { fileId: string; content: string; senderId: string }) => {
+        socketInstance.on("code-update", (data: { fileId: string; content: string; senderId: string }) => {
             // Update the files state
             setFiles((prev) =>
                 prev.map((f) => (f.id === data.fileId ? { ...f, content: data.content } : f))
@@ -245,7 +262,7 @@ export default function RoomPage() {
         });
 
         // Listen for remote cursors positions
-        socket.on("cursor-update", (data: { userId: string; userName: string; fileId: string; position: { lineNumber: number; column: number } | null }) => {
+        socketInstance.on("cursor-update", (data: { userId: string; userName: string; fileId: string; position: { lineNumber: number; column: number } | null }) => {
             setRemoteCursors((prev) => ({
                 ...prev,
                 [data.userId]: {
@@ -257,7 +274,7 @@ export default function RoomPage() {
         });
 
         // Listen for room file operations (creation, rename, deletion)
-        socket.on("file-update", (data: { action: "create" | "rename" | "delete"; fileId?: string; name?: string; file?: any }) => {
+        socketInstance.on("file-update", (data: { action: "create" | "rename" | "delete"; fileId?: string; name?: string; file?: any }) => {
             if (data.action === "create" && data.file) {
                 setFiles((prev) => {
                     if (prev.some((f) => f.id === data.file.id)) return prev;
@@ -278,23 +295,26 @@ export default function RoomPage() {
             }
         });
 
-        socket.on("user-joined", (data: { id: string; name: string }) => {
+        socketInstance.on("user-joined", (data: { id: string; name: string }) => {
             toast.success(`${data.name} entered the room`);
-            queryClient.invalidateQueries({ queryKey: ["room-members", id] });
+            const roomObjectId = access.kind === "ok" ? access.room.id : id;
+            queryClient.invalidateQueries({ queryKey: ["room-members", roomObjectId] });
         });
 
-        socket.on("user-left", (data: { id: string; name: string }) => {
+        socketInstance.on("user-left", (data: { id: string; name: string }) => {
             toast(`${data.name} left the room`, { icon: "👋" });
-            queryClient.invalidateQueries({ queryKey: ["room-members", id] });
+            const roomObjectId = access.kind === "ok" ? access.room.id : id;
+            queryClient.invalidateQueries({ queryKey: ["room-members", roomObjectId] });
         });
 
-        socket.on("new-join-request", () => {
-            queryClient.invalidateQueries({ queryKey: ["room-join-requests", id] });
+        socketInstance.on("new-join-request", () => {
+            const roomObjectId = access.kind === "ok" ? access.room.id : id;
+            queryClient.invalidateQueries({ queryKey: ["room-join-requests", roomObjectId] });
             toast("New join request received!", { icon: "🔔" });
         });
 
-        socket.on("join-request-handled", (data: { roomId: string; status: "approved" | "rejected" }) => {
-            if (data.roomId !== id) return;
+        socketInstance.on("join-request-handled", (data: { roomId: string; customId?: string; status: "approved" | "rejected" }) => {
+            if (data.roomId !== id && data.customId !== id) return;
             if (data.status === "approved") {
                 toast.success("Join request approved! Entering room...");
                 load();
@@ -304,13 +324,63 @@ export default function RoomPage() {
             }
         });
 
-        socket.on("error-msg", (msg: string) => {
+        socketInstance.on("member-role-updated", (data: { roomId: string; role: string }) => {
+            const roomObjectId = access.kind === "ok" ? access.room.id : id;
+            if (data.roomId !== roomObjectId) return;
+            toast.success(`Your role has been updated to ${data.role}`);
+            queryClient.invalidateQueries({ queryKey: ["room-members", data.roomId] });
+        });
+
+        socketInstance.on("error-msg", (msg: string) => {
             toast.error(msg);
         });
 
+        socketInstance.on("new-message", (msg: { _id: string; senderId: string; senderName: string; content: string; createdAt: string }) => {
+            console.log("Socket new-message event received in RoomPage:", msg);
+            const isSelf = 
+                (user && (msg.senderId === user.id || msg.senderId === user._id)) || 
+                (user && msg.senderName === user.name);
+            const isChatActive = panelOpenRef.current && activeRightTabRef.current === "chat";
+
+            console.log("Chat notification check:", { isSelf, isChatActive, panelOpen: panelOpenRef.current, activeTab: activeRightTabRef.current });
+
+            if (!isSelf && !isChatActive) {
+                toast(
+                    (t) => (
+                        <div
+                            onClick={() => {
+                                setPanelOpen(true);
+                                setActiveRightTab("chat");
+                                toast.dismiss(t.id);
+                            }}
+                            className="flex flex-col gap-1 min-w-[220px]"
+                        >
+                            <span className="font-semibold text-xs text-indigo-400">New message from {msg.senderName}</span>
+                            <span className="text-[11px] text-slate-200 truncate">{msg.content}</span>
+                        </div>
+                    ),
+                    {
+                        position: "bottom-left",
+                        duration: 4500,
+                        icon: "💬",
+                        style: {
+                            background: "#0f172a",
+                            border: "1px solid rgba(255, 255, 255, 0.15)",
+                            color: "#ffffff",
+                            borderRadius: "10px",
+                            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
+                            cursor: "pointer",
+                            padding: "10px 12px",
+                        }
+                    }
+                );
+            }
+        });
+
         return () => {
-            socket.disconnect();
+            socketInstance.disconnect();
             socketRef.current = null;
+            setSocket(null);
             setConnected(false);
         };
     }, [id, user, access.kind]);
@@ -613,6 +683,27 @@ export default function RoomPage() {
                     </div>
                 )}
                 <div className="flex-1 min-w-0 flex flex-col">
+                    {/* Horizontal Editor Tabs */}
+                    {files.length > 0 && (
+                        <div className="flex items-center gap-1 border-b border-border bg-card px-2 h-9 overflow-x-auto scrollbar-none shrink-0 select-none">
+                            {files.map((f) => {
+                                const isActive = f.id === activeFileId;
+                                return (
+                                    <button
+                                        key={f.id}
+                                        onClick={() => setActiveFileId(f.id)}
+                                        className={`flex items-center gap-2 h-full px-3 text-[11px] font-medium border-t-2 transition-all cursor-pointer truncate max-w-[130px] ${
+                                            isActive
+                                                ? "border-primary bg-muted/20 text-foreground"
+                                                : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/10"
+                                        }`}
+                                    >
+                                        <span className="font-mono truncate">{f.name}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                     <div className="flex-1 min-h-0">
                         {activeFile ? (
                             <CodeRunner
@@ -660,28 +751,62 @@ export default function RoomPage() {
                     </div>
                 </div>
                 {panelOpen && (
-                    <div className={`shrink-0 animate-in slide-in-from-right duration-200 h-full w-72 lg:w-80 border-l border-border bg-card ${
+                    <div className={`shrink-0 animate-in slide-in-from-right duration-200 h-full w-72 lg:w-80 border-l border-border bg-card flex flex-col ${
                         isMobile ? "absolute inset-y-0 right-0 z-20 shadow-2xl bg-card" : "relative"
                     }`}>
-                        <RoomMembersPanel
-                            roomId={room.id}
-                            isOwner={room.owner_id === user?.id || room.owner_id === user?._id}
-                            isPublic={room.is_public}
-                            onlineUserIds={onlineUsers.map((u) => u.id)}
-                            onVisibilityChange={async (next: boolean) => {
-                                try {
-                                    await updateRoom(room.id, { isPublic: next });
-                                    setAccess((prev) =>
-                                        prev.kind === "ok"
-                                            ? { ...prev, room: { ...prev.room, is_public: next } }
-                                            : prev
-                                    );
-                                    toast.success(`Room is now ${next ? "public" : "private"}`);
-                                } catch (e: any) {
-                                    toast.error(e.message || "Failed to update room visibility");
-                                }
-                            }}
-                        />
+                        {/* Sidebar Tabs */}
+                        <div className="flex border-b border-border bg-muted/20 shrink-0">
+                            <button
+                                onClick={() => setActiveRightTab("members")}
+                                className={`flex-1 py-2 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 cursor-pointer transition ${
+                                    activeRightTab === "members"
+                                        ? "border-primary text-foreground bg-card"
+                                        : "border-transparent text-muted-foreground hover:text-foreground"
+                                }`}
+                            >
+                                Members
+                            </button>
+                            <button
+                                onClick={() => setActiveRightTab("chat")}
+                                className={`flex-1 py-2 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 cursor-pointer transition ${
+                                    activeRightTab === "chat"
+                                        ? "border-primary text-foreground bg-card"
+                                        : "border-transparent text-muted-foreground hover:text-foreground"
+                                }`}
+                            >
+                                Chat
+                            </button>
+                        </div>
+
+                        {/* Content Pane */}
+                        <div className="flex-1 min-h-0">
+                            {activeRightTab === "members" ? (
+                                <RoomMembersPanel
+                                    roomId={room.id}
+                                    isOwner={room.owner_id === user?.id || room.owner_id === user?._id}
+                                    isPublic={room.is_public}
+                                    onlineUserIds={onlineUsers.map((u) => u.id)}
+                                    onVisibilityChange={async (next: boolean) => {
+                                        try {
+                                            await updateRoom(room.id, { isPublic: next });
+                                            setAccess((prev) =>
+                                                prev.kind === "ok"
+                                                    ? { ...prev, room: { ...prev.room, is_public: next } }
+                                                    : prev
+                                            );
+                                            toast.success(`Room is now ${next ? "public" : "private"}`);
+                                        } catch (e: any) {
+                                            toast.error(e.message || "Failed to update room visibility");
+                                        }
+                                    }}
+                                />
+                            ) : (
+                                <RoomChatPanel
+                                    roomId={room.id}
+                                    socket={socket}
+                                />
+                            )}
+                        </div>
                     </div>
                 )}
             </motion.div>

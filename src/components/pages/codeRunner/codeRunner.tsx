@@ -47,6 +47,7 @@ export function CodeRunner({
   codeRef.current = value;
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const startedAt = useRef<number>(0);
+  const editorRef = useRef<any>(null);
 
   const lang = LANG_BY_ID[language];
   const mode = lang?.runMode ?? "none";
@@ -160,6 +161,7 @@ export function CodeRunner({
   }, []);
 
   const handleEditorMount: OnMount = (editor, monaco) => {
+    editorRef.current = editor;
     onEditorMount?.(editor, monaco);
 
     // Register keyboard commands directly in Monaco Editor
@@ -173,16 +175,17 @@ export function CodeRunner({
   };
 
   const format = () => {
-    try {
-      if (language === "json") {
-        const parsed = JSON.parse(codeRef.current);
-        onChange?.(JSON.stringify(parsed, null, 2));
-        toast.success("Formatted JSON");
-        return;
+    if (editorRef.current) {
+      const formatAction = editorRef.current.getAction("editor.action.formatDocument");
+      if (formatAction) {
+        formatAction.run()
+          .then(() => toast.success("Code formatted!"))
+          .catch((err: any) => toast.error(`Format failed: ${err.message}`));
+      } else {
+        toast.error("Formatting not supported for this language");
       }
-      toast("Format: built-in formatter supports JSON. Use Shift+Alt+F in Monaco for others.");
-    } catch (e: any) {
-      toast.error(`Format failed: ${e.message}`);
+    } else {
+      toast.error("Editor not initialized");
     }
   };
 

@@ -122,7 +122,7 @@ export function RoomMembersPanel({
     };
 
     return (
-        <div className="h-full border-l border-border bg-card p-4 flex flex-col gap-4 overflow-y-auto scrollbar-thin">
+        <div className="h-full w-full p-4 flex flex-col gap-4 overflow-y-auto scrollbar-thin">
             {/* Header */}
             <div className="flex items-center justify-between pb-2 border-b border-border">
                 <h3 className="font-semibold text-sm flex items-center gap-2">

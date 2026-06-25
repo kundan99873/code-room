@@ -183,3 +183,8 @@ export const handleJoinRequest = async (roomId: string, requestId: string, statu
   });
   return handleResponse(res);
 };
+
+export const fetchRoomMessages = async (roomId: string): Promise<any[]> => {
+  const res = await apiFetch(`/api/rooms/${roomId}/messages`);
+  return handleResponse(res);
+};
