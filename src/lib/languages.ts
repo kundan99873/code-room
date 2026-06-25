@@ -532,204 +532,105 @@ export async function runOnPiston(
 
 export function starter(lang: string): string {
   const map: Record<string, string> = {
-    javascript: `// JavaScript — runs in a secure browser sandbox
-const greet = (name) => \`Hello, \${name}!\`;
-console.log(greet("World"));
-
-const nums = [1, 2, 3, 4, 5];
-const squares = nums.map((n) => n * n);
-console.log("squares:", squares);
-console.log("sum:", squares.reduce((a, b) => a + b, 0));
-
-async function delay(ms) {
-  await new Promise((r) => setTimeout(r, ms));
-  return \`done after \${ms}ms\`;
+    javascript: `// JavaScript — runs in browser sandbox
+console.log("Printing numbers from 1 to 10:");
+for (let i = 1; i <= 10; i++) {
+  console.log(i);
 }
-delay(150).then((msg) => console.log(msg));
 `,
-    typescript: `// TypeScript — types are stripped, then run in the browser sandbox
-type User = { id: number; name: string; admin?: boolean };
-
-const users: User[] = [
-  { id: 1, name: "Ada", admin: true },
-  { id: 2, name: "Linus" },
-  { id: 3, name: "Grace", admin: true },
-];
-
-const admins = users.filter((u) => u.admin).map((u) => u.name);
-console.log("admins:", admins);
-
-const greet = (user: User): string => \`Hi \${user.name} (#\${user.id})\`;
-users.forEach((u) => console.log(greet(u)));
+    typescript: `// TypeScript — types are stripped, then run in browser
+console.log("Printing numbers from 1 to 10:");
+const numbers: number[] = Array.from({ length: 10 }, (_, i) => i + 1);
+numbers.forEach((num: number) => {
+  console.log(num);
+});
 `,
     python: `# Python — runs locally in your browser via Pyodide
-def fib(n: int):
-    a, b = 0, 1
-    for _ in range(n):
-        yield a
-        a, b = b, a + b
-
-print("first 10 fibs:", list(fib(10)))
-
-squares = [x * x for x in range(1, 6)]
-print("squares:", squares)
-
-user = {"name": "Ada", "role": "engineer"}
-print(f"{user['name']} is an {user['role']}")
+print("Printing numbers from 1 to 10:")
+for i in range(1, 11):
+    print(i)
 `,
-    rust: `fn fib(n: u32) -> u64 {
-    let (mut a, mut b) = (0u64, 1u64);
-    for _ in 0..n { let t = a + b; a = b; b = t; }
-    a
-}
-
-fn main() {
-    let nums: Vec<u64> = (0..10).map(fib).collect();
-    println!("fibs: {:?}", nums);
-    let sum: i32 = (1..=100).sum();
-    println!("1..=100 sum = {}", sum);
+    rust: `fn main() {
+    println!("Printing numbers from 1 to 10:");
+    for i in 1..=10 {
+        println!("{}", i);
+    }
 }
 `,
     go: `package main
 
 import "fmt"
 
-func fib(n int) int {
-    a, b := 0, 1
-    for i := 0; i < n; i++ {
-        a, b = b, a+b
-    }
-    return a
-}
-
 func main() {
-    fmt.Println("Hello, Go!")
-    for i := 0; i < 10; i++ {
-        fmt.Printf("fib(%d) = %d\\n", i, fib(i))
+    fmt.Println("Printing numbers from 1 to 10:")
+    for i := 1; i <= 10; i++ {
+        fmt.Println(i)
     }
 }
 `,
-    java: `public class Main {
-    static int fib(int n) {
-        int a = 0, b = 1;
-        for (int i = 0; i < n; i++) { int t = a + b; a = b; b = t; }
-        return a;
-    }
-
+    java: `class Main {
     public static void main(String[] args) {
-        System.out.println("Hello, Java!");
-        for (int i = 0; i < 10; i++) {
-            System.out.println("fib(" + i + ") = " + fib(i));
+        System.out.println("Printing numbers from 1 to 10:");
+        for (int i = 1; i <= 10; i++) {
+            System.out.println(i);
         }
     }
 }
 `,
     cpp: `#include <iostream>
-#include <vector>
-
-long long fib(int n) {
-    long long a = 0, b = 1;
-    for (int i = 0; i < n; i++) { long long t = a + b; a = b; b = t; }
-    return a;
-}
 
 int main() {
-    std::cout << "Hello, C++!\\n";
-    for (int i = 0; i < 10; i++) {
-        std::cout << "fib(" << i << ") = " << fib(i) << "\\n";
+    std::cout << "Printing numbers from 1 to 10:\\n";
+    for (int i = 1; i <= 10; ++i) {
+        std::cout << i << "\\n";
     }
     return 0;
 }
 `,
     csharp: `using System;
-using System.Linq;
 
 class Program {
-    static int Fib(int n) {
-        int a = 0, b = 1;
-        for (int i = 0; i < n; i++) { int t = a + b; a = b; b = t; }
-        return a;
-    }
-
     static void Main() {
-        Console.WriteLine("Hello, C#!");
-        var fibs = Enumerable.Range(0, 10).Select(Fib);
-        Console.WriteLine("fibs: " + string.Join(", ", fibs));
+        Console.WriteLine("Printing numbers from 1 to 10:");
+        for (int i = 1; i <= 10; i++) {
+            Console.WriteLine(i);
+        }
     }
 }
 `,
     php: `<?php
-// PHP — runs locally in your browser via php-wasm
-function fib(int $n): int {
-    [$a, $b] = [0, 1];
-    for ($i = 0; $i < $n; $i++) { [$a, $b] = [$b, $a + $b]; }
-    return $a;
-}
-
-echo "Hello, PHP!\\n";
-for ($i = 0; $i < 10; $i++) {
-    echo "fib($i) = " . fib($i) . "\\n";
+echo "Printing numbers from 1 to 10:\\n";
+for ($i = 1; $i <= 10; $i++) {
+    echo $i . "\\n";
 }
 `,
-    ruby: `def fib(n)
-  a, b = 0, 1
-  n.times { a, b = b, a + b }
-  a
+    ruby: `puts "Printing numbers from 1 to 10:"
+(1..10).each do |i|
+  puts i
 end
-
-puts "Hello, Ruby!"
-(0...10).each { |i| puts "fib(#{i}) = #{fib(i)}" }
 `,
     bash: `#!/usr/bin/env bash
-echo "Hello, Bash!"
-
-for i in 1 2 3 4 5; do
-  echo "count: $i"
+echo "Printing numbers from 1 to 10:"
+for i in {1..10}; do
+  echo "$i"
 done
-
-name="world"
-echo "Greetings, $name."
 `,
-    html: `<!doctype html>
-<html lang="en">
+    html: `<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>Playground</title>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      display: grid;
-      place-items: center;
-      min-height: 100vh;
-      margin: 0;
-      background: linear-gradient(135deg, #6366f1, #ec4899);
-      color: white;
-    }
-    .card {
-      padding: 2rem 3rem;
-      background: rgba(0,0,0,0.25);
-      border-radius: 1rem;
-      backdrop-filter: blur(8px);
-      text-align: center;
-    }
-    button {
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-    }
-  </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Hello, World!</h1>
-    <p id="msg">Edit me and press Run.</p>
-    <button onclick="document.getElementById('msg').textContent = 'Clicked at ' + new Date().toLocaleTimeString()">Click me</button>
-  </div>
+  <h1>Numbers from 1 to 10:</h1>
+  <ul id="numbers"></ul>
   <script>
-    console.log("Page ready");
+    const ul = document.getElementById('numbers');
+    for (let i = 1; i <= 10; i++) {
+      const li = document.createElement('li');
+      li.textContent = i;
+      ul.appendChild(li);
+    }
   </script>
 </body>
 </html>
@@ -768,32 +669,16 @@ body {
 }
 `,
     sql: `-- SQL sample
-CREATE TABLE users (
-  id     INTEGER PRIMARY KEY,
-  name   TEXT NOT NULL,
-  email  TEXT UNIQUE,
-  active BOOLEAN DEFAULT TRUE
+CREATE TABLE numbers (
+  val INTEGER
 );
 
-INSERT INTO users (id, name, email) VALUES
-  (1, 'Ada Lovelace',   'ada@example.com'),
-  (2, 'Linus Torvalds', 'linus@example.com'),
-  (3, 'Grace Hopper',   'grace@example.com');
+INSERT INTO numbers (val) VALUES
+  (1), (2), (3), (4), (5), (6), (7), (8), (9), (10);
 
-SELECT name, email
-FROM users
-WHERE active = TRUE
-ORDER BY name;
+SELECT val FROM numbers;
 `,
-    json: `{
-  "name": "coderoom",
-  "version": "1.0.0",
-  "description": "Collaborative code playground",
-  "features": ["editor", "runner", "rooms", "live preview"],
-  "active": true,
-  "author": { "name": "You", "email": "you@example.com" },
-  "tags": ["dev", "tools", "education"]
-}
+    json: `[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 `,
   };
   return map[lang] ?? "";
