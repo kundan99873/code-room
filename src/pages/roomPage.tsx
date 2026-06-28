@@ -9,7 +9,7 @@ import { CodeRunner } from "@/components/pages/codeRunner/codeRunner";
 import { FileTabs, type RoomFile } from "@/components/pages/codeRunner/fileTabs";
 import { RoomHeader } from "@/components/pages/room/roomHeader";
 import { RoomNotFound, PrivateRoomRequest } from "@/components/pages/room/roomStates";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { io, type Socket } from "socket.io-client";
 import { fetchCurrentUser } from "@/api/auth";
@@ -67,6 +67,7 @@ export default function RoomPage() {
     const [filesPanelOpen, setFilesPanelOpen] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 768 : true);
     const [files, setFiles] = useState<RoomFile[]>([]);
     const [activeFileId, setActiveFileId] = useState<string | null>(null);
+    const [openFileIds, setOpenFileIds] = useState<string[]>([]);
     const [activeRightTab, setActiveRightTab] = useState<"members" | "chat">("members");
     const skipNextRef = useRef(false);
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -120,11 +121,19 @@ export default function RoomPage() {
             }));
             setFiles(mappedFiles);
             if (mappedFiles.length > 0) {
+                setOpenFileIds((prev) => {
+                    if (prev.length > 0) {
+                        const next = prev.filter((fid) => mappedFiles.some((f) => f.id === fid));
+                        return next.length > 0 ? next : [mappedFiles[0].id];
+                    }
+                    return [mappedFiles[0].id];
+                });
                 setActiveFileId((prev) => {
                     if (prev && mappedFiles.some((f) => f.id === prev)) return prev;
                     return mappedFiles[0].id;
                 });
             } else {
+                setOpenFileIds([]);
                 setActiveFileId(null);
             }
             return mappedFiles;
@@ -287,9 +296,15 @@ export default function RoomPage() {
             } else if (data.action === "delete" && data.fileId) {
                 setFiles((prev) => {
                     const remaining = prev.filter((f) => f.id !== data.fileId);
-                    if (activeFileIdRef.current === data.fileId) {
-                        setActiveFileId(remaining[0]?.id ?? null);
-                    }
+                    setOpenFileIds((prevOpen) => {
+                        const nextOpen = prevOpen.filter((id) => id !== data.fileId);
+                        if (activeFileIdRef.current === data.fileId) {
+                            const closedIndex = prevOpen.indexOf(data.fileId);
+                            const nextActiveId = nextOpen[closedIndex] ?? nextOpen[closedIndex - 1] ?? remaining[0]?.id ?? null;
+                            setActiveFileId(nextActiveId);
+                        }
+                        return nextOpen;
+                    });
                     return remaining;
                 });
             }
@@ -522,6 +537,10 @@ export default function RoomPage() {
                 updated_at: newFileData.updatedAt,
             };
             setFiles((prev) => [...prev, newFile]);
+            setOpenFileIds((prev) => {
+                if (prev.includes(newFile.id)) return prev;
+                return [...prev, newFile.id];
+            });
             setActiveFileId(newFile.id);
             toast.success(`Created ${name}`);
 
@@ -569,7 +588,15 @@ export default function RoomPage() {
             await deleteRoomFile(id!, fileId);
             const remaining = files.filter((f) => f.id !== fileId);
             setFiles(remaining);
-            if (activeFileId === fileId) setActiveFileId(remaining[0]?.id ?? null);
+            setOpenFileIds((prev) => {
+                const next = prev.filter((id) => id !== fileId);
+                if (activeFileId === fileId) {
+                    const closedIndex = prev.indexOf(fileId);
+                    const nextActiveId = next[closedIndex] ?? next[closedIndex - 1] ?? remaining[0]?.id ?? null;
+                    setActiveFileId(nextActiveId);
+                }
+                return next;
+            });
             toast.success("File deleted");
 
             if (socketRef.current) {
@@ -581,6 +608,18 @@ export default function RoomPage() {
         } catch (e: any) {
             toast.error(e.message || "Failed to delete file");
         }
+    };
+
+    const closeFile = (fileId: string) => {
+        setOpenFileIds((prev) => {
+            const next = prev.filter((id) => id !== fileId);
+            if (activeFileId === fileId) {
+                const closedIndex = prev.indexOf(fileId);
+                const nextActiveId = next[closedIndex] ?? next[closedIndex - 1] ?? null;
+                setActiveFileId(nextActiveId);
+            }
+            return next;
+        });
     };
 
     const copyLink = () => {
@@ -670,6 +709,10 @@ export default function RoomPage() {
                             files={files}
                             activeId={activeFileId}
                             onSelect={(id) => {
+                                setOpenFileIds((prev) => {
+                                    if (prev.includes(id)) return prev;
+                                    return [...prev, id];
+                                });
                                 setActiveFileId(id);
                                 if (isMobile) {
                                     setFilesPanelOpen(false);
@@ -682,28 +725,7 @@ export default function RoomPage() {
                         />
                     </div>
                 )}
-                <div className="flex-1 min-w-0 flex flex-col">
-                    {/* Horizontal Editor Tabs */}
-                    {files.length > 0 && (
-                        <div className="flex items-center gap-1 border-b border-border bg-card px-2 h-9 overflow-x-auto scrollbar-none shrink-0 select-none">
-                            {files.map((f) => {
-                                const isActive = f.id === activeFileId;
-                                return (
-                                    <button
-                                        key={f.id}
-                                        onClick={() => setActiveFileId(f.id)}
-                                        className={`flex items-center gap-2 h-full px-3 text-[11px] font-medium border-t-2 transition-all cursor-pointer truncate max-w-[130px] ${
-                                            isActive
-                                                ? "border-primary bg-muted/20 text-foreground"
-                                                : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/10"
-                                        }`}
-                                    >
-                                        <span className="font-mono truncate">{f.name}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
+                <div className="flex-1 min-w-0 flex flex-col font-sans">
                     <div className="flex-1 min-h-0">
                         {activeFile ? (
                             <CodeRunner
@@ -742,10 +764,46 @@ export default function RoomPage() {
                                 heightClass="h-full"
                                 allFiles={files}
                                 activeFileName={activeFile.name}
+                                header={
+                                    <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none select-none max-w-full py-1">
+                                        {openFileIds.map((fid) => {
+                                            const f = files.find((file) => file.id === fid);
+                                            if (!f) return null;
+                                            const isActive = f.id === activeFileId;
+                                            return (
+                                                <div
+                                                    key={f.id}
+                                                    className={`group flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[11px] font-medium border transition-all cursor-pointer truncate max-w-[150px] shrink-0 ${
+                                                        isActive
+                                                            ? "border-primary/20 bg-primary/10 text-white font-semibold"
+                                                            : "border-border/45 text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                                                    }`}
+                                                    onClick={() => setActiveFileId(f.id)}
+                                                >
+                                                    <span className="font-sans truncate">{f.name.split("/").pop()}</span>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            closeFile(f.id);
+                                                        }}
+                                                        className="p-0.5 rounded-full text-muted-foreground/60 hover:text-foreground hover:bg-muted/60 transition cursor-pointer"
+                                                        title="Close tab"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                }
                             />
                         ) : (
                             <div className="h-full grid place-items-center text-sm text-muted-foreground">
-                                No files yet. {canEdit ? "Create one above." : "Wait for a member to add a file."}
+                                {files.length > 0 ? (
+                                    "No files open. Select a file from the explorer sidebar to start editing."
+                                ) : (
+                                    canEdit ? "No files yet. Create one above." : "Wait for a member to add a file."
+                                )}
                             </div>
                         )}
                     </div>

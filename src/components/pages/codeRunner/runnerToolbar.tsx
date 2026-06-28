@@ -27,11 +27,11 @@ export function RunnerToolbar({
   onRun,
 }: Props) {
   return (
-    <div className="flex flex-col gap-3 border-b border-border bg-card px-4 py-3 md:flex-row md:items-center md:justify-between">
-      <div className="flex items-center gap-3 min-w-0 w-full">
-        <div className="min-w-0 w-full">{header}</div>
+    <div className="flex flex-col gap-3 border-b border-border bg-card px-3 py-1.5 md:flex-row md:items-center md:justify-between h-auto md:h-12 shrink-0 select-none">
+      <div className="flex items-center min-w-0 flex-1">
+        <div className="min-w-0 flex-1">{header}</div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         {onLanguageChange && (
           <LanguageSelect
             value={language}

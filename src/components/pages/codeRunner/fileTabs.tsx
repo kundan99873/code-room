@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Edit2, FileCode2, Check } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Plus, Trash2, Edit2, FileCode2, Check, Folder, FolderOpen, ChevronDown, ChevronRight, FolderPlus, FolderInput } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,42 +28,123 @@ type Props = {
     canEdit: boolean;
 };
 
+interface TreeNode {
+    name: string;
+    path: string;
+    isFolder: boolean;
+    children?: TreeNode[];
+    file?: RoomFile;
+}
+
+function buildFileTree(files: RoomFile[], emptyFolders: string[]): TreeNode[] {
+    const root: TreeNode[] = [];
+
+    // 1. Add files
+    files.forEach((file) => {
+        const parts = file.name.split("/");
+        let currentLevel = root;
+        let currentPath = "";
+
+        parts.forEach((part, index) => {
+            currentPath = currentPath ? `${currentPath}/${part}` : part;
+            const isLast = index === parts.length - 1;
+
+            let node = currentLevel.find((n) => n.name === part && n.isFolder === !isLast);
+
+            if (!node) {
+                node = {
+                    name: part,
+                    path: currentPath,
+                    isFolder: !isLast,
+                    children: isLast ? undefined : [],
+                    file: isLast ? file : undefined,
+                };
+                currentLevel.push(node);
+            }
+
+            if (!isLast) {
+                currentLevel = node.children!;
+            }
+        });
+    });
+
+    // 2. Add empty folders
+    emptyFolders.forEach((folderPath) => {
+        const parts = folderPath.split("/");
+        let currentLevel = root;
+        let currentPath = "";
+
+        parts.forEach((part) => {
+            currentPath = currentPath ? `${currentPath}/${part}` : part;
+            let node = currentLevel.find((n) => n.name === part && n.isFolder === true);
+
+            if (!node) {
+                node = {
+                    name: part,
+                    path: currentPath,
+                    isFolder: true,
+                    children: [],
+                };
+                currentLevel.push(node);
+            }
+
+            currentLevel = node.children!;
+        });
+    });
+
+    const sortTree = (nodes: TreeNode[]) => {
+        nodes.sort((a, b) => {
+            if (a.isFolder && !b.isFolder) return -1;
+            if (!a.isFolder && b.isFolder) return 1;
+            return a.name.localeCompare(b.name);
+        });
+        nodes.forEach((node) => {
+            if (node.children) {
+                sortTree(node.children);
+            }
+        });
+    };
+
+    sortTree(root);
+    return root;
+}
+
 function getFileIcon(fileName: string) {
     const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
     switch (ext) {
         case "js":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-amber-500/10 text-amber-500 font-mono text-[9px] font-bold border border-amber-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-amber-500/10 text-amber-500 font-sans text-[8px] font-bold border border-amber-500/20">
                     JS
                 </div>
             );
         case "ts":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-blue-500/10 text-blue-500 font-mono text-[9px] font-bold border border-blue-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-blue-500/10 text-blue-500 font-sans text-[8px] font-bold border border-blue-500/20">
                     TS
                 </div>
             );
         case "py":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-emerald-500/10 text-emerald-500 font-mono text-[9px] font-bold border border-emerald-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-emerald-500/10 text-emerald-500 font-sans text-[8px] font-bold border border-emerald-500/20">
                     PY
                 </div>
             );
         case "java":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-orange-500/10 text-orange-500 font-mono text-[9px] font-bold border border-orange-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-orange-500/10 text-orange-500 font-sans text-[8px] font-bold border border-orange-500/20">
                     JV
                 </div>
             );
         case "go":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-cyan-500/10 text-cyan-500 font-mono text-[9px] font-bold border border-cyan-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-cyan-500/10 text-cyan-500 font-sans text-[8px] font-bold border border-cyan-500/20">
                     GO
                 </div>
             );
         case "rs":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-rose-500/10 text-rose-500 font-mono text-[9px] font-bold border border-rose-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-rose-500/10 text-rose-500 font-sans text-[8px] font-bold border border-rose-500/20">
                     RS
                 </div>
             );
@@ -72,61 +152,61 @@ function getFileIcon(fileName: string) {
         case "h":
         case "hpp":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-indigo-500/10 text-indigo-500 font-mono text-[9px] font-bold border border-indigo-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-indigo-500/10 text-indigo-500 font-sans text-[8px] font-bold border border-indigo-500/20">
                     C++
                 </div>
             );
         case "cs":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-purple-500/10 text-purple-500 font-mono text-[9px] font-bold border border-purple-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-purple-500/10 text-purple-500 font-sans text-[8px] font-bold border border-purple-500/20">
                     C#
                 </div>
             );
         case "php":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-violet-500/10 text-violet-500 font-mono text-[9px] font-bold border border-violet-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-violet-500/10 text-violet-500 font-sans text-[8px] font-bold border border-violet-500/20">
                     PHP
                 </div>
             );
         case "rb":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-red-500/10 text-red-500 font-mono text-[9px] font-bold border border-red-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-red-500/10 text-red-500 font-sans text-[8px] font-bold border border-red-500/20">
                     RB
                 </div>
             );
         case "sh":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-zinc-500/10 text-zinc-400 font-mono text-[9px] font-bold border border-zinc-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-zinc-500/10 text-zinc-400 font-sans text-[8px] font-bold border border-zinc-500/20 text-center">
                     SH
                 </div>
             );
         case "html":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-orange-600/10 text-orange-500 font-mono text-[9px] font-bold border border-orange-600/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-orange-600/10 text-orange-500 font-sans text-[8px] font-bold border border-orange-600/20">
                     HT
                 </div>
             );
         case "css":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-sky-500/10 text-sky-400 font-mono text-[9px] font-bold border border-sky-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-sky-500/10 text-sky-400 font-sans text-[8px] font-bold border border-sky-500/20">
                     CS
                 </div>
             );
         case "sql":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-teal-500/10 text-teal-400 font-mono text-[9px] font-bold border border-teal-500/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-teal-500/10 text-teal-400 font-sans text-[8px] font-bold border border-teal-500/20 text-center">
                     SQL
                 </div>
             );
         case "json":
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-amber-400/10 text-amber-500 font-mono text-[9px] font-bold border border-amber-400/20">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-amber-400/10 text-amber-500 font-sans text-[8px] font-bold border border-amber-400/20">
                     {"{}"}
                 </div>
             );
         default:
             return (
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground font-mono text-[9px] font-bold border border-border">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[3px] bg-muted text-muted-foreground font-sans text-[8px] font-bold border border-border">
                     TX
                 </div>
             );
@@ -137,8 +217,55 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
     const [creating, setCreating] = useState(false);
     const [newName, setNewName] = useState("");
     const [newLang, setNewLang] = useState("javascript");
+    const [createParentPath, setCreateParentPath] = useState("");
+    const [selectedFolder, setSelectedFolder] = useState("");
     const [renamingId, setRenamingId] = useState<string | null>(null);
     const [renameValue, setRenameValue] = useState("");
+    const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
+
+    const [creatingFolder, setCreatingFolder] = useState(false);
+    const [newFolderName, setNewFolderName] = useState("");
+    const [emptyFolders, setEmptyFolders] = useState<string[]>([]);
+
+    const [movingFile, setMovingFile] = useState<RoomFile | null>(null);
+    const [moveTargetFolder, setMoveTargetFolder] = useState("");
+
+    // Synchronize selectedFolder with createParentPath when dialog opens
+    useEffect(() => {
+        if (creating) {
+            setSelectedFolder(createParentPath);
+        }
+    }, [creating, createParentPath]);
+
+    const toggleFolder = (path: string) => {
+        setExpandedFolders((prev) => {
+            const currentVal = prev[path] ?? true; // default to true
+            return {
+                ...prev,
+                [path]: !currentVal,
+            };
+        });
+    };
+
+    // Extract all folder paths from files and emptyFolders
+    const folderOptions = Array.from(
+        new Set([
+            ...files
+                .map((f) => {
+                    const parts = f.name.split("/");
+                    if (parts.length > 1) {
+                        const foldersList: string[] = [];
+                        for (let i = 1; i < parts.length; i++) {
+                            foldersList.push(parts.slice(0, i).join("/"));
+                        }
+                        return foldersList;
+                    }
+                    return [];
+                })
+                .flat(),
+            ...emptyFolders,
+        ])
+    ).sort();
 
     const submitCreate = async () => {
         const name = newName.trim();
@@ -151,7 +278,8 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
         const lang = LANGUAGES.find((l) => l.id === newLang);
         if (!lang) return toast.error("Invalid language selected");
 
-        const finalName = `${name}.${lang.ext}`;
+        const extName = `${name}.${lang.ext}`;
+        const finalName = selectedFolder ? `${selectedFolder}/${extName}` : extName;
 
         if (files.some((f) => f.name === finalName)) {
             return toast.error(`A file named "${finalName}" already exists`);
@@ -159,12 +287,43 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
 
         try {
             await onCreate(finalName, lang.id);
+            
+            // Clean up emptyFolders that are now parent to this file
+            if (selectedFolder) {
+                setEmptyFolders((prev) => prev.filter((path) => path !== selectedFolder));
+            }
+
             setCreating(false);
             setNewName("");
             setNewLang("javascript");
+            setCreateParentPath("");
+            setSelectedFolder("");
         } catch (e: any) {
             toast.error(e?.message ?? "Failed to create file");
         }
+    };
+
+    const submitCreateFolder = async () => {
+        const name = newFolderName.trim().replace(/\/+$/, ""); // remove trailing slashes
+        if (!name) return toast.error("Folder name is required");
+
+        if (name.includes("..") || name.includes(".")) {
+            return toast.error("Invalid folder name");
+        }
+
+        // Check if folder already exists in files or emptyFolders
+        if (folderOptions.includes(name)) {
+            return toast.error(`Folder "${name}" already exists`);
+        }
+
+        setEmptyFolders((prev) => [...prev, name]);
+        setExpandedFolders((prev) => ({
+            ...prev,
+            [name]: true,
+        }));
+        setCreatingFolder(false);
+        setNewFolderName("");
+        toast.success(`Folder "${name}" created`);
     };
 
     const submitRename = async (id: string) => {
@@ -197,97 +356,265 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
         }
     };
 
+    const submitMove = async () => {
+        if (!movingFile) return;
+
+        const fileName = movingFile.name.split("/").pop()!;
+        const finalName = moveTargetFolder ? `${moveTargetFolder}/${fileName}` : fileName;
+
+        if (finalName === movingFile.name) {
+            setMovingFile(null);
+            return; // No change
+        }
+
+        if (files.some((f) => f.name === finalName)) {
+            return toast.error(`A file named "${fileName}" already exists in the target folder`);
+        }
+
+        try {
+            await onRename(movingFile.id, finalName);
+            
+            // Clean up emptyFolders that are now parent to this moved file
+            if (moveTargetFolder) {
+                setEmptyFolders((prev) => prev.filter((path) => path !== moveTargetFolder));
+            }
+
+            setMovingFile(null);
+            toast.success(`Moved to ${moveTargetFolder || "Root"}`);
+        } catch (e: any) {
+            toast.error(e?.message ?? "Failed to move file");
+        }
+    };
+
+    const deleteFolder = async (folderPath: string) => {
+        const prefix = folderPath + "/";
+        const filesToDelete = files.filter((f) => f.name.startsWith(prefix));
+        
+        if (filesToDelete.length === 0) {
+            // Delete folder path from emptyFolders state
+            setEmptyFolders((prev) => prev.filter((p) => p !== folderPath && !p.startsWith(prefix)));
+            toast.success(`Folder "${folderPath}" deleted`);
+            return;
+        }
+        
+        if (confirm(`Delete folder "${folderPath}" and all its ${filesToDelete.length} files?`)) {
+            try {
+                await Promise.all(filesToDelete.map((f) => onDelete(f.id)));
+                setEmptyFolders((prev) => prev.filter((p) => p !== folderPath && !p.startsWith(prefix)));
+                toast.success(`Folder "${folderPath}" deleted`);
+            } catch (e: any) {
+                toast.error(e?.message ?? "Failed to delete folder");
+            }
+        }
+    };
+
+    const renderTree = (nodes: TreeNode[], depth = 0): React.ReactNode => {
+        return nodes.map((node) => {
+            const isFolder = node.isFolder;
+            const isExpanded = expandedFolders[node.path] ?? true; // default to true (expanded)
+            
+            if (isFolder) {
+                return (
+                    <div key={node.path} className="flex flex-col select-none">
+                        <div
+                            className="group flex items-center justify-between py-1.5 px-2 hover:bg-muted/30 rounded-md text-[11px] font-medium text-muted-foreground/80 hover:text-foreground cursor-pointer transition-colors"
+                            onClick={() => toggleFolder(node.path)}
+                            style={{ paddingLeft: `${depth * 12 + 6}px` }}
+                        >
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                                {isExpanded ? (
+                                    <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground/60 transition-transform" />
+                                ) : (
+                                    <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground/60 transition-transform" />
+                                )}
+                                {isExpanded ? (
+                                    <FolderOpen className="h-3.5 w-3.5 shrink-0 text-indigo-400/95" />
+                                ) : (
+                                    <Folder className="h-3.5 w-3.5 shrink-0 text-indigo-400/95" />
+                                )}
+                                <span className="truncate font-sans font-medium text-slate-200 group-hover:text-white transition-colors">{node.name}</span>
+                            </div>
+                            
+                            {canEdit && (
+                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setCreateParentPath(node.path);
+                                            setCreating(true);
+                                        }}
+                                        className="p-1 rounded-md text-muted-foreground hover:text-white hover:bg-muted transition-colors cursor-pointer"
+                                        title="New file in folder"
+                                    >
+                                        <Plus className="h-3 w-3" />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            deleteFolder(node.path);
+                                        }}
+                                        className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted transition-colors cursor-pointer"
+                                        title="Delete folder"
+                                    >
+                                        <Trash2 className="h-3 w-3" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        
+                        {isExpanded && node.children && (
+                            <div className="flex flex-col">
+                                {renderTree(node.children, depth + 1)}
+                            </div>
+                        )}
+                    </div>
+                );
+            } else {
+                const f = node.file!;
+                if (f.name.endsWith(".gitkeep")) return null; // Hide placeholder file in the explorer tree!
+
+                const active = f.id === activeId;
+                const isRenaming = renamingId === f.id;
+                
+                return (
+                    <div
+                        key={f.id}
+                        className={`group flex items-center justify-between py-1.5 px-2 rounded-md text-[11px] font-medium transition-all select-none ${
+                            active
+                                ? "bg-indigo-500/10 text-white font-semibold border-l-2 border-indigo-500 rounded-r-md rounded-l-none"
+                                : "text-muted-foreground/90 hover:bg-muted/20 hover:text-foreground"
+                        }`}
+                        style={{ 
+                            paddingLeft: active ? `${depth * 12 + 16}px` : `${depth * 12 + 18}px`,
+                            marginLeft: active ? `2px` : `0px`
+                        }}
+                    >
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                            {getFileIcon(f.name)}
+                            {isRenaming ? (
+                                <form
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        submitRename(f.id);
+                                    }}
+                                    className="flex items-center gap-1 flex-1 min-w-0"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <Input
+                                        autoFocus
+                                        value={renameValue}
+                                        onChange={(e) => setRenameValue(e.target.value)}
+                                        onBlur={() => submitRename(f.id)}
+                                        className="h-5 text-[10px] px-1 py-0.5 w-full bg-background"
+                                    />
+                                    <button type="submit" className="text-primary cursor-pointer shrink-0">
+                                        <Check className="h-3 w-3" />
+                                    </button>
+                                </form>
+                            ) : (
+                                <button
+                                    onClick={() => onSelect(f.id)}
+                                    onDoubleClick={() => canEdit && (setRenamingId(f.id), setRenameValue(f.name))}
+                                    className="truncate text-left w-full cursor-pointer font-sans text-slate-300 group-hover:text-white transition-colors"
+                                >
+                                    {node.name}
+                                </button>
+                            )}
+                        </div>
+                        
+                        {!isRenaming && canEdit && (
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setMovingFile(f);
+                                        const parts = f.name.split("/");
+                                        const currentFolder = parts.length > 1 ? parts.slice(0, -1).join("/") : "";
+                                        setMoveTargetFolder(currentFolder);
+                                    }}
+                                    className="p-1 rounded-md text-muted-foreground hover:text-white hover:bg-muted transition-colors cursor-pointer"
+                                    title="Move File"
+                                >
+                                    <FolderInput className="h-3 w-3" />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setRenamingId(f.id);
+                                        setRenameValue(f.name);
+                                    }}
+                                    className="p-1 rounded-md text-muted-foreground hover:text-white hover:bg-muted transition-colors cursor-pointer"
+                                    title="Rename"
+                                >
+                                    <Edit2 className="h-3 w-3" />
+                                </button>
+                                {files.length > 1 && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (confirm(`Delete file "${f.name}"?`)) onDelete(f.id);
+                                        }}
+                                        className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted transition-colors cursor-pointer"
+                                        title="Delete"
+                                    >
+                                        <Trash2 className="h-3 w-3" />
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+        });
+    };
+
+    const tree = buildFileTree(files, emptyFolders);
+
     return (
         <>
-            <div className="w-56 border-r border-border bg-card p-4 flex flex-col gap-3 shrink-0 overflow-y-auto scrollbar-thin">
-                <div className="flex items-center justify-between pb-1 border-b border-border/60">
+            <div className="w-64 border-r border-border bg-card p-3.5 flex flex-col gap-2 shrink-0 overflow-y-auto scrollbar-thin h-full">
+                <div className="flex items-center justify-between pb-1 border-b border-border/60 shrink-0">
                     <h3 className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                        <FileCode2 className="h-3.5 w-3.5" /> Files
+                        <FileCode2 className="h-3.5 w-3.5" /> Workspace
                     </h3>
                     {canEdit && (
-                        <button
-                            onClick={() => setCreating(true)}
-                            className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
-                            title="New File"
-                        >
-                            <Plus className="h-3.5 w-3.5" />
-                        </button>
+                        <div className="flex items-center gap-0.5">
+                            <button
+                                onClick={() => {
+                                    setNewFolderName("");
+                                    setCreatingFolder(true);
+                                }}
+                                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                                title="New Folder"
+                            >
+                                <FolderPlus className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setCreateParentPath("");
+                                    setCreating(true);
+                                }}
+                                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                                title="New File"
+                            >
+                                <Plus className="h-3.5 w-3.5" />
+                            </button>
+                        </div>
                     )}
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                    <AnimatePresence initial={false}>
-                        {files.map((f) => {
-                            const active = f.id === activeId;
-                            const isRenaming = renamingId === f.id;
-                            return (
-                                <motion.div
-                                    key={f.id}
-                                    layout
-                                    initial={{ opacity: 0, y: -4 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    className={`group flex items-center justify-between rounded-lg border p-2 text-xs font-medium shrink-0 transition-all ${active
-                                        ? "border-primary/30 bg-primary/10 text-foreground shadow-sm"
-                                        : "border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        {getFileIcon(f.name)}
-                                        {isRenaming ? (
-                                            <form
-                                                onSubmit={(e) => { e.preventDefault(); submitRename(f.id); }}
-                                                className="flex items-center gap-1 flex-1 min-w-0"
-                                            >
-                                                <Input
-                                                    autoFocus
-                                                    value={renameValue}
-                                                    onChange={(e) => setRenameValue(e.target.value)}
-                                                    onBlur={() => submitRename(f.id)}
-                                                    className="h-6 text-xs px-1.5 py-0.5 w-full bg-background"
-                                                />
-                                                <button type="submit" className="text-primary cursor-pointer shrink-0"><Check className="h-3.5 w-3.5" /></button>
-                                            </form>
-                                        ) : (
-                                            <button
-                                                onClick={() => onSelect(f.id)}
-                                                onDoubleClick={() => canEdit && (setRenamingId(f.id), setRenameValue(f.name))}
-                                                className="font-mono truncate text-left w-full cursor-pointer"
-                                            >
-                                                {f.name}
-                                            </button>
-                                        )}
-                                    </div>
-                                    
-                                    {!isRenaming && canEdit && (
-                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0 ml-1">
-                                            <button
-                                                onClick={() => { setRenamingId(f.id); setRenameValue(f.name); }}
-                                                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
-                                                title="Rename"
-                                            >
-                                                <Edit2 className="h-3.5 w-3.5" />
-                                            </button>
-                                            {files.length > 1 && (
-                                                <button
-                                                    onClick={() => {
-                                                        if (confirm(`Delete file "${f.name}"?`)) onDelete(f.id);
-                                                    }}
-                                                    className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-muted transition cursor-pointer"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
-                                </motion.div>
-                            );
-                        })}
-                    </AnimatePresence>
+                <div className="flex-1 overflow-y-auto scrollbar-none flex flex-col gap-0.5">
+                    {tree.length > 0 ? (
+                        renderTree(tree)
+                    ) : (
+                        <div className="text-xs text-muted-foreground py-2 text-center">
+                            No files yet
+                        </div>
+                    )}
                 </div>
             </div>
 
+            {/* Create File Dialog */}
             <Dialog open={creating} onOpenChange={setCreating}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
@@ -296,13 +623,28 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
                         </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3 py-2">
+                        {folderOptions.length > 0 && (
+                            <div>
+                                <label className="text-xs font-medium text-muted-foreground">Select Folder</label>
+                                <select
+                                    value={selectedFolder}
+                                    onChange={(e) => setSelectedFolder(e.target.value)}
+                                    className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                                >
+                                    <option value="">Root (No Folder)</option>
+                                    {folderOptions.map((fld) => (
+                                        <option key={fld} value={fld}>{fld}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                         <div>
                             <label className="text-xs font-medium text-muted-foreground">File name</label>
                             <Input
                                 autoFocus
                                 value={newName}
                                 onChange={(e) => setNewName(e.target.value)}
-                                placeholder="e.g. utils.ts"
+                                placeholder="e.g. utils"
                                 onKeyDown={(e) => e.key === "Enter" && submitCreate()}
                                 className="mt-1"
                             />
@@ -319,11 +661,73 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
                                 ))}
                             </select>
                         </div>
-
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setCreating(false)}>Cancel</Button>
+                        <Button variant="outline" onClick={() => { setCreating(false); setCreateParentPath(""); setSelectedFolder(""); }}>Cancel</Button>
                         <Button onClick={submitCreate}>Create</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Create Folder Dialog */}
+            <Dialog open={creatingFolder} onOpenChange={setCreatingFolder}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <FolderPlus className="h-4 w-4 text-primary" /> Create new folder
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3 py-2">
+                        <div>
+                            <label className="text-xs font-medium text-muted-foreground">Folder name</label>
+                            <Input
+                                autoFocus
+                                value={newFolderName}
+                                onChange={(e) => setNewFolderName(e.target.value)}
+                                placeholder="e.g. src/components"
+                                onKeyDown={(e) => e.key === "Enter" && submitCreateFolder()}
+                                className="mt-1"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setCreatingFolder(false)}>Cancel</Button>
+                        <Button onClick={submitCreateFolder}>Create</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Move File Dialog */}
+            <Dialog open={!!movingFile} onOpenChange={(open) => !open && setMovingFile(null)}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <FolderInput className="h-4 w-4 text-primary" /> Move file
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3 py-2">
+                        {movingFile && (
+                            <div className="text-xs text-muted-foreground">
+                                Moving file <span className="font-mono text-foreground font-semibold">{movingFile.name.split("/").pop()}</span> to:
+                            </div>
+                        )}
+                        <div>
+                            <label className="text-xs font-medium text-muted-foreground">Select Target Folder</label>
+                            <select
+                                value={moveTargetFolder}
+                                onChange={(e) => setMoveTargetFolder(e.target.value)}
+                                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                            >
+                                <option value="">Root (No Folder)</option>
+                                {folderOptions.map((fld) => (
+                                    <option key={fld} value={fld}>{fld}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setMovingFile(null)}>Cancel</Button>
+                        <Button onClick={submitMove}>Move</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
