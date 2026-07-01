@@ -1,6 +1,7 @@
 import Editor, { type OnMount } from "@monaco-editor/react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context/themeContext";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Copy, Download, Maximize2, Minimize2, Wand2, Zap,
 } from "lucide-react";
@@ -71,6 +72,7 @@ export function EditorPanel({
             theme={resolved === "dark" ? "vs-dark" : "vs-light"}
             onMount={onEditorMount}
             onChange={(v) => onChange?.(v ?? "")}
+            loading={<Skeleton className="h-full w-full rounded-none" />}
             options={{
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
               fontSize: 14,
@@ -91,7 +93,7 @@ export function EditorPanel({
             }}
           />
         ) : (
-          <div className="h-full grid place-items-center text-xs text-muted-foreground">Loading editor…</div>
+          <Skeleton className="h-full w-full rounded-none" />
         )}
       </div>
     </div>

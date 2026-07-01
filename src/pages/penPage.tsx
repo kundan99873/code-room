@@ -3,6 +3,7 @@ import Editor from "@monaco-editor/react";
 import { Button } from "@/components/ui/button";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useTheme } from "@/context/themeContext";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/useMobile";
 import { toast } from "react-hot-toast";
 import {
@@ -300,6 +301,7 @@ function PenPage() {
             theme={resolved === "dark" ? "vs-dark" : "vs-light"}
             onChange={(v) => setCurrent(v ?? "")}
             onMount={handleEditorMount}
+            loading={<Skeleton className="h-full w-full rounded-none" />}
             options={{
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
               fontSize: 14,
@@ -323,7 +325,7 @@ function PenPage() {
             }}
           />
         ) : (
-          <div className="h-full grid place-items-center text-xs text-muted-foreground">Loading editor…</div>
+          <Skeleton className="h-full w-full rounded-none" />
         )}
       </div>
     </div>

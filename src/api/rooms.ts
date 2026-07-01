@@ -65,7 +65,7 @@ const handleResponse = async (res: Response) => {
 };
 
 // Rooms API
-export const createRoom = async (roomData: { name: string; language?: string; isPublic?: boolean }): Promise<any> => {
+export const createRoom = async (roomData: { name: string; language?: string; isPublic?: boolean; teamId?: string }): Promise<any> => {
   const res = await apiFetch("/api/rooms", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

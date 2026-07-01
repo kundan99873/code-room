@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { fetchRoomMessages } from "@/api/rooms";
-import { Send, Smile, Loader2, MessageSquare } from "lucide-react";
+import { Send, Smile, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Message = {
   _id: string;
@@ -135,8 +136,16 @@ export function RoomChatPanel({ roomId, socket }: Props) {
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3.5 scrollbar-thin" ref={scrollRef}>
         {loading ? (
-          <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin text-primary mr-2" /> Loading history...
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className={`flex flex-col space-y-1.5 ${i % 2 === 0 ? "items-start" : "items-end"}`}>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-2 w-8" />
+                </div>
+                <Skeleton className={`h-8 rounded-lg ${i % 2 === 0 ? "w-2/3" : "w-1/2"}`} />
+              </div>
+            ))}
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-4">

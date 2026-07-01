@@ -9,7 +9,56 @@ import { CodeRunner } from "@/components/pages/codeRunner/codeRunner";
 import { FileTabs, type RoomFile } from "@/components/pages/codeRunner/fileTabs";
 import { RoomHeader } from "@/components/pages/room/roomHeader";
 import { RoomNotFound, PrivateRoomRequest } from "@/components/pages/room/roomStates";
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function RoomPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Room Header Skeleton */}
+      <header className="h-14 border-b border-border/50 flex items-center justify-between px-4">
+        <div className="flex items-center space-x-3">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-5 w-16 rounded-full" />
+        </div>
+        <div className="flex items-center space-x-3">
+          <Skeleton className="h-6 w-24 rounded-md" />
+          <Skeleton className="h-8 w-8 rounded-full" />
+        </div>
+      </header>
+
+      {/* Main Layout Skeleton */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar Skeleton */}
+        <aside className="w-60 border-r border-border/50 p-4 space-y-4 hidden md:block">
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-4" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+          </div>
+        </aside>
+
+        {/* Editor & Console Skeleton */}
+        <main className="flex-grow flex flex-col p-4 space-y-4">
+          <div className="flex items-center space-x-2">
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-8 w-20" />
+          </div>
+          <Skeleton className="flex-grow w-full rounded-lg" />
+          <div className="h-32 border border-border/50 rounded-lg p-4">
+            <Skeleton className="h-4 w-32 mb-2" />
+            <Skeleton className="h-4 w-full" />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
 import { toast } from "react-hot-toast";
 import { io, type Socket } from "socket.io-client";
 import { fetchCurrentUser } from "@/api/auth";
@@ -638,13 +687,7 @@ export default function RoomPage() {
     };
 
     if (access.kind === "loading") {
-        return (
-            <div className="min-h-screen grid place-items-center bg-background text-muted-foreground text-sm">
-                <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 shadow-sm">
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" /> loading room…
-                </div>
-            </div>
-        );
+        return <RoomPageSkeleton />;
     }
 
     if (access.kind === "not-found") {

@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     fetchRoomMembers,
     addRoomMember,
@@ -152,144 +153,169 @@ export function RoomMembersPanel({
                 </form>
             )}
 
-            {/* Members List */}
-            <div className="flex-1 flex flex-col gap-3 min-h-[150px]">
-                <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-muted-foreground">Active Members ({members.length})</span>
-                    {loadingMembers && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
-                </div>
-
-                <div className="flex flex-col gap-2">
-                    {members.map((m) => {
-                        const isSelf = m.userId?._id === user?.id;
-                        return (
-                            <div
-                                key={m._id}
-                                className="flex items-center justify-between p-2 rounded-lg border border-border/40 bg-muted/20 hover:bg-muted/40 transition"
-                            >
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="relative shrink-0">
-                                        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500/10 to-fuchsia-500/10 border border-primary/20 flex items-center justify-center">
-                                            <span className="text-[10px] font-semibold text-primary uppercase">
-                                                {m.userId?.name?.charAt(0) || "U"}
-                                            </span>
-                                        </div>
-                                        {onlineUserIds.includes(m.userId?._id) && (
-                                            <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 border border-card animate-pulse" />
-                                        )}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-xs font-medium truncate flex items-center gap-1">
-                                            {m.userId?.name || "User"}
-                                            {isSelf && <span className="text-[10px] text-muted-foreground">(You)</span>}
-                                        </p>
-                                        <p className="text-[10px] text-muted-foreground truncate">{m.userId?.email}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-1 shrink-0">
-                                    {/* Role Badge / Actions */}
-                                    {isOwner && !isSelf && m.role !== "owner" ? (
-                                        <div className="relative flex items-center">
-                                            <select
-                                                value={m.role}
-                                                onChange={(e) =>
-                                                    updateRoleMutation.mutate({
-                                                        userId: m.userId._id,
-                                                        role: e.target.value as "admin" | "editor" | "viewer",
-                                                    })
-                                                }
-                                                className="appearance-none text-[10px] font-semibold bg-primary/10 hover:bg-primary/15 border border-primary/20 hover:border-primary/40 rounded-md pl-2 pr-5 py-1 text-primary cursor-pointer focus:outline-none transition duration-150 ease-in-out"
-                                            >
-                                                <option value="viewer" className="bg-card text-foreground">Viewer</option>
-                                                <option value="editor" className="bg-card text-foreground">Editor</option>
-                                                <option value="admin" className="bg-card text-foreground">Admin</option>
-                                            </select>
-                                            <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-primary">
-                                                <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
-                                                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                                                </svg>
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-background border border-border flex items-center gap-1 capitalize">
-                                            {m.role === "owner" ? (
-                                                <ShieldCheck className="h-3 w-3 text-amber-500" />
-                                            ) : m.role === "admin" ? (
-                                                <Shield className="h-3 w-3 text-indigo-400" />
-                                            ) : m.role === "editor" ? (
-                                                <Edit3 className="h-3.5 w-3.5 text-emerald-400" />
-                                            ) : m.role === "viewer" ? (
-                                                <Eye className="h-3.5 w-3.5 text-blue-400" />
-                                            ) : null}
-                                            {m.role}
-                                        </span>
-                                    )}
-
-                                    {/* Kick Member (Owner only) */}
-                                    {isOwner && !isSelf && m.role !== "owner" && (
-                                        <button
-                                            onClick={() => {
-                                                if (confirm(`Remove ${m.userId.name} from the room?`)) {
-                                                    removeMutation.mutate(m.userId._id);
-                                                }
-                                            }}
-                                            className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition cursor-pointer"
-                                            title="Remove member"
-                                        >
-                                            <Trash2 className="h-3.5 w-3.5" />
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
+             {/* Members List */}
+             <div className="flex-1 flex flex-col gap-3 min-h-[150px]">
+                 <div className="flex items-center justify-between">
+                     <span className="text-[11px] font-medium text-muted-foreground">Active Members ({members.length})</span>
+                 </div>
+ 
+                 {loadingMembers ? (
+                     <div className="space-y-2">
+                         {Array.from({ length: 3 }).map((_, i) => (
+                             <div key={i} className="flex items-center gap-2.5 p-2 border border-border/40 bg-muted/10 rounded-lg">
+                                 <Skeleton className="h-7 w-7 rounded-full shrink-0" />
+                                 <div className="flex-1 space-y-1.5 min-w-0">
+                                     <Skeleton className="h-3 w-20" />
+                                     <Skeleton className="h-2 w-28" />
+                                 </div>
+                             </div>
+                         ))}
+                     </div>
+                 ) : (
+                     <div className="flex flex-col gap-2">
+                         {members.map((m) => {
+                             const isSelf = m.userId?._id === user?.id;
+                             return (
+                                 <div
+                                     key={m._id}
+                                     className="flex items-center justify-between p-2 rounded-lg border border-border/40 bg-muted/20 hover:bg-muted/40 transition"
+                                 >
+                                     <div className="flex items-center gap-2.5 min-w-0">
+                                         <div className="relative shrink-0">
+                                             <div className="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500/10 to-fuchsia-500/10 border border-primary/20 flex items-center justify-center">
+                                                 <span className="text-[10px] font-semibold text-primary uppercase">
+                                                     {m.userId?.name?.charAt(0) || "U"}
+                                                 </span>
+                                             </div>
+                                             {onlineUserIds.includes(m.userId?._id) && (
+                                                 <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 border border-card animate-pulse" />
+                                             )}
+                                         </div>
+                                         <div className="min-w-0">
+                                             <p className="text-xs font-medium truncate flex items-center gap-1">
+                                                 {m.userId?.name || "User"}
+                                                 {isSelf && <span className="text-[10px] text-muted-foreground">(You)</span>}
+                                             </p>
+                                             <p className="text-[10px] text-muted-foreground truncate">{m.userId?.email}</p>
+                                         </div>
+                                     </div>
+ 
+                                     <div className="flex items-center gap-1 shrink-0">
+                                         {/* Role Badge / Actions */}
+                                         {isOwner && !isSelf && m.role !== "owner" ? (
+                                             <div className="relative flex items-center">
+                                                 <select
+                                                     value={m.role}
+                                                     onChange={(e) =>
+                                                         updateRoleMutation.mutate({
+                                                             userId: m.userId._id,
+                                                             role: e.target.value as "admin" | "editor" | "viewer",
+                                                         })
+                                                     }
+                                                     className="appearance-none text-[10px] font-semibold bg-primary/10 hover:bg-primary/15 border border-primary/20 hover:border-primary/40 rounded-md pl-2 pr-5 py-1 text-primary cursor-pointer focus:outline-none transition duration-150 ease-in-out"
+                                                 >
+                                                     <option value="viewer" className="bg-card text-foreground">Viewer</option>
+                                                     <option value="editor" className="bg-card text-foreground">Editor</option>
+                                                     <option value="admin" className="bg-card text-foreground">Admin</option>
+                                                 </select>
+                                                 <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-primary">
+                                                     <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                                                         <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                                     </svg>
+                                                 </span>
+                                             </div>
+                                         ) : (
+                                             <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-background border border-border flex items-center gap-1 capitalize">
+                                                 {m.role === "owner" ? (
+                                                     <ShieldCheck className="h-3 w-3 text-amber-500" />
+                                                 ) : m.role === "admin" ? (
+                                                     <Shield className="h-3 w-3 text-indigo-400" />
+                                                 ) : m.role === "editor" ? (
+                                                     <Edit3 className="h-3.5 w-3.5 text-emerald-400" />
+                                                 ) : m.role === "viewer" ? (
+                                                     <Eye className="h-3.5 w-3.5 text-blue-400" />
+                                                 ) : null}
+                                                 {m.role}
+                                             </span>
+                                         )}
+ 
+                                         {/* Kick Member (Owner only) */}
+                                         {isOwner && !isSelf && m.role !== "owner" && (
+                                             <button
+                                                 onClick={() => {
+                                                     if (confirm(`Remove ${m.userId.name} from the room?`)) {
+                                                         removeMutation.mutate(m.userId._id);
+                                                     }
+                                                 }}
+                                                 className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition cursor-pointer"
+                                                 title="Remove member"
+                                             >
+                                                 <Trash2 className="h-3.5 w-3.5" />
+                                             </button>
+                                         )}
+                                     </div>
+                                 </div>
+                             );
+                         })}
+                     </div>
+                 )}
+             </div>
 
             {/* Pending Requests Section (Owner/Admin only) */}
-            {isAdminOrOwner && joinRequests.length > 0 && (
+            {isAdminOrOwner && (joinRequests.length > 0 || loadingRequests) && (
                 <div className="border-t border-border pt-4 flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] font-medium text-amber-500 font-semibold">
                             Pending Requests ({joinRequests.length})
                         </span>
-                        {loadingRequests && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                     </div>
 
-                    <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
-                        {joinRequests.map((req) => (
-                            <div
-                                key={req._id}
-                                className="flex items-center justify-between p-2 rounded-lg border border-amber-500/20 bg-amber-500/5 transition animate-pulse-subtle"
-                            >
-                                <div className="min-w-0">
-                                    <p className="text-xs font-medium truncate">{req.userId?.name || "Requesting User"}</p>
-                                    <p className="text-[10px] text-muted-foreground truncate">{req.userId?.email}</p>
+                    {loadingRequests ? (
+                        <div className="space-y-2">
+                            {Array.from({ length: 1 }).map((_, i) => (
+                                <div key={i} className="flex items-center justify-between p-2 rounded-lg border border-amber-500/20 bg-amber-500/5">
+                                    <div className="space-y-1.5 flex-1 min-w-0">
+                                        <Skeleton className="h-3 w-20" />
+                                        <Skeleton className="h-2 w-28" />
+                                    </div>
                                 </div>
-                                <div className="flex gap-1 shrink-0 ml-2">
-                                    <button
-                                        onClick={() =>
-                                            joinRequestMutation.mutate({ requestId: req._id, status: "approved" })
-                                        }
-                                        className="p-1 rounded bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white transition cursor-pointer"
-                                        title="Approve"
-                                    >
-                                        <Check className="h-3.5 w-3.5" />
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            joinRequestMutation.mutate({ requestId: req._id, status: "rejected" })
-                                        }
-                                        className="p-1 rounded bg-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition cursor-pointer"
-                                        title="Reject"
-                                    >
-                                        <X className="h-3.5 w-3.5" />
-                                    </button>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+                            {joinRequests.map((req) => (
+                                <div
+                                    key={req._id}
+                                    className="flex items-center justify-between p-2 rounded-lg border border-amber-500/20 bg-amber-500/5 transition animate-pulse-subtle"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="text-xs font-medium truncate">{req.userId?.name || "Requesting User"}</p>
+                                        <p className="text-[10px] text-muted-foreground truncate">{req.userId?.email}</p>
+                                    </div>
+                                    <div className="flex gap-1 shrink-0 ml-2">
+                                        <button
+                                            onClick={() =>
+                                                joinRequestMutation.mutate({ requestId: req._id, status: "approved" })
+                                            }
+                                            className="p-1 rounded bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white transition cursor-pointer"
+                                            title="Approve"
+                                        >
+                                            <Check className="h-3.5 w-3.5" />
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                joinRequestMutation.mutate({ requestId: req._id, status: "rejected" })
+                                            }
+                                            className="p-1 rounded bg-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition cursor-pointer"
+                                            title="Reject"
+                                        >
+                                            <X className="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 

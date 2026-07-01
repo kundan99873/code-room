@@ -10,22 +10,49 @@ import ResetPasswordPage from "@/pages/resetPasswordPage";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 
+import { Skeleton } from "@/components/ui/skeleton";
+
+function FullPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-background flex flex-col p-6 space-y-6">
+      {/* Header skeleton */}
+      <div className="flex items-center justify-between border-b border-border/50 pb-4">
+        <div className="flex items-center space-x-3">
+          <Skeleton className="h-8 w-8 rounded-lg" />
+          <Skeleton className="h-5 w-24" />
+        </div>
+        <div className="flex items-center space-x-4">
+          <Skeleton className="h-8 w-20 rounded-full" />
+          <Skeleton className="h-8 w-8 rounded-full" />
+        </div>
+      </div>
+      
+      {/* Content skeleton */}
+      <div className="flex-grow grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="md:col-span-1 space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="md:col-span-3 space-y-6">
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Skeleton className="h-40 w-full rounded-xl" />
+            <Skeleton className="h-40 w-full rounded-xl" />
+            <Skeleton className="h-40 w-full rounded-xl" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Protected Route Guard
 function ProtectedRoute() {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen grid place-items-center bg-background text-muted-foreground text-sm">
-        <div className="flex items-center gap-3">
-          <svg className="animate-spin h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          Loading session...
-        </div>
-      </div>
-    );
+    return <FullPageSkeleton />;
   }
 
   if (!user) {
@@ -40,17 +67,7 @@ function GuestRoute() {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen grid place-items-center bg-background text-muted-foreground text-sm">
-        <div className="flex items-center gap-3">
-          <svg className="animate-spin h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          Loading session...
-        </div>
-      </div>
-    );
+    return <FullPageSkeleton />;
   }
 
   if (user) {

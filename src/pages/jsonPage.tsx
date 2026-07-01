@@ -9,6 +9,7 @@ import {
   ResizableHandle,
 } from "@/components/ui/resizable";
 import { useTheme } from "@/context/themeContext";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/useMobile";
 import { toast } from "react-hot-toast";
 import {
@@ -293,6 +294,7 @@ export default function JsonPage() {
                     value={src}
                     onChange={(v) => setSrc(v ?? "")}
                     theme={resolved === "dark" ? "vs-dark" : "vs-light"}
+                    loading={<Skeleton className="h-full w-full rounded-none" />}
                     options={{
                       fontFamily: "'JetBrains Mono', monospace",
                       fontSize: 14,
@@ -305,9 +307,7 @@ export default function JsonPage() {
                     }}
                   />
                 ) : (
-                  <div className="h-full grid place-items-center text-xs text-muted-foreground">
-                    Loading editor…
-                  </div>
+                  <Skeleton className="h-full w-full rounded-none" />
                 )}
               </div>
             </div>
@@ -395,6 +395,7 @@ export default function JsonPage() {
                         language={outLang}
                         value={parsed ? other : status.message}
                         theme={resolved === "dark" ? "vs-dark" : "vs-light"}
+                        loading={<Skeleton className="h-full w-full rounded-none" />}
                         options={{
                           readOnly: true,
                           fontFamily: "'JetBrains Mono', monospace",
@@ -407,9 +408,7 @@ export default function JsonPage() {
                         }}
                       />
                     ) : (
-                      <div className="h-full grid place-items-center text-xs text-muted-foreground">
-                        Loading output…
-                      </div>
+                      <Skeleton className="h-full w-full rounded-none" />
                     )}
                   </TabsContent>
                 ))}
@@ -452,6 +451,7 @@ export default function JsonPage() {
                       value={src}
                       onChange={(v) => setSrc(v ?? "")}
                       theme={resolved === "dark" ? "vs-dark" : "vs-light"}
+                      loading={<Skeleton className="h-full w-full rounded-none" />}
                       options={{
                         fontFamily: "'JetBrains Mono', monospace",
                         fontSize: 14,
@@ -464,9 +464,7 @@ export default function JsonPage() {
                       }}
                     />
                   ) : (
-                    <div className="h-full grid place-items-center text-xs text-muted-foreground">
-                      Loading editor…
-                    </div>
+                    <Skeleton className="h-full w-full rounded-none" />
                   )}
                 </div>
               </div>
@@ -556,6 +554,7 @@ export default function JsonPage() {
                           language={outLang}
                           value={parsed ? other : status.message}
                           theme={resolved === "dark" ? "vs-dark" : "vs-light"}
+                          loading={<Skeleton className="h-full w-full rounded-none" />}
                           options={{
                             readOnly: true,
                             fontFamily: "'JetBrains Mono', monospace",
@@ -568,9 +567,7 @@ export default function JsonPage() {
                           }}
                         />
                       ) : (
-                        <div className="h-full grid place-items-center text-xs text-muted-foreground">
-                          Loading output…
-                        </div>
+                        <Skeleton className="h-full w-full rounded-none" />
                       )}
                     </TabsContent>
                   ))}
