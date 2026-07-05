@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Edit2, FileCode2, Check, Folder, FolderOpen, ChevronDown, ChevronRight, FolderPlus, FolderInput } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Plus, Trash2, Edit2, FileCode2, Check, Folder, FolderOpen, ChevronDown, ChevronRight, FolderPlus, FolderInput, Search, ChevronLeft, FolderMinus } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ type Props = {
     onRename: (id: string, name: string) => Promise<void>;
     onDelete: (id: string) => Promise<void>;
     canEdit: boolean;
+    onCollapseSidebar?: () => void;
 };
 
 interface TreeNode {
@@ -213,7 +214,7 @@ function getFileIcon(fileName: string) {
     }
 }
 
-export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDelete, canEdit }: Props) {
+export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDelete, canEdit, onCollapseSidebar }: Props) {
     const [creating, setCreating] = useState(false);
     const [newName, setNewName] = useState("");
     const [newLang, setNewLang] = useState("javascript");
@@ -229,6 +230,13 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
 
     const [movingFile, setMovingFile] = useState<RoomFile | null>(null);
     const [moveTargetFolder, setMoveTargetFolder] = useState("");
+
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const filteredFiles = useMemo(() => {
+        if (!searchQuery.trim()) return files;
+        return files.filter((f) => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }, [files, searchQuery]);
 
     // Synchronize selectedFolder with createParentPath when dialog opens
     useEffect(() => {
@@ -266,6 +274,14 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
             ...emptyFolders,
         ])
     ).sort();
+
+    const collapseAll = () => {
+        const next: Record<string, boolean> = {};
+        folderOptions.forEach((path) => {
+            next[path] = false;
+        });
+        setExpandedFolders(next);
+    };
 
     const submitCreate = async () => {
         const name = newName.trim();
@@ -411,7 +427,7 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
     const renderTree = (nodes: TreeNode[], depth = 0): React.ReactNode => {
         return nodes.map((node) => {
             const isFolder = node.isFolder;
-            const isExpanded = expandedFolders[node.path] ?? true; // default to true (expanded)
+            const isExpanded = searchQuery.trim() !== "" ? true : (expandedFolders[node.path] ?? true);
             
             if (isFolder) {
                 return (
@@ -568,47 +584,77 @@ export function FileTabs({ files, activeId, onSelect, onCreate, onRename, onDele
         });
     };
 
-    const tree = buildFileTree(files, emptyFolders);
+    const tree = useMemo(() => buildFileTree(filteredFiles, emptyFolders), [filteredFiles, emptyFolders]);
 
     return (
         <>
-            <div className="w-64 border-r border-border bg-card p-3.5 flex flex-col gap-2 shrink-0 overflow-y-auto scrollbar-thin h-full">
-                <div className="flex items-center justify-between pb-1 border-b border-border/60 shrink-0">
-                    <h3 className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                        <FileCode2 className="h-3.5 w-3.5" /> Workspace
+            <div className="w-full h-full bg-card p-3 flex flex-col gap-2 overflow-hidden border-r border-border/60">
+                <div className="flex items-center justify-between pb-1.5 border-b border-border/60 shrink-0 select-none">
+                    <h3 className="font-semibold text-[10px] text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <FileCode2 className="h-3.5 w-3.5" /> Explorer
                     </h3>
-                    {canEdit && (
-                        <div className="flex items-center gap-0.5">
+                    <div className="flex items-center gap-0.5">
+                        <button
+                            onClick={collapseAll}
+                            className="p-1 rounded text-slate-400 hover:text-foreground hover:bg-muted/65 transition cursor-pointer"
+                            title="Collapse All Folders"
+                        >
+                            <FolderMinus className="h-3.5 w-3.5" />
+                        </button>
+                        {canEdit && (
+                            <>
+                                <button
+                                    onClick={() => {
+                                        setNewFolderName("");
+                                        setCreatingFolder(true);
+                                    }}
+                                    className="p-1 rounded text-slate-400 hover:text-foreground hover:bg-muted/65 transition cursor-pointer"
+                                    title="New Folder"
+                                >
+                                    <FolderPlus className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setCreateParentPath("");
+                                        setCreating(true);
+                                    }}
+                                    className="p-1 rounded text-slate-400 hover:text-foreground hover:bg-muted/65 transition cursor-pointer"
+                                    title="New File"
+                                >
+                                    <Plus className="h-3.5 w-3.5" />
+                                </button>
+                            </>
+                        )}
+                        {onCollapseSidebar && (
                             <button
-                                onClick={() => {
-                                    setNewFolderName("");
-                                    setCreatingFolder(true);
-                                }}
-                                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
-                                title="New Folder"
+                                onClick={onCollapseSidebar}
+                                className="p-1 rounded text-slate-400 hover:text-foreground hover:bg-muted/65 transition cursor-pointer"
+                                title="Collapse Sidebar"
                             >
-                                <FolderPlus className="h-3.5 w-3.5" />
+                                <ChevronLeft className="h-3.5 w-3.5" />
                             </button>
-                            <button
-                                onClick={() => {
-                                    setCreateParentPath("");
-                                    setCreating(true);
-                                }}
-                                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
-                                title="New File"
-                            >
-                                <Plus className="h-3.5 w-3.5" />
-                            </button>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto scrollbar-none flex flex-col gap-0.5">
+                {/* File Search Input */}
+                <div className="relative shrink-0 select-none">
+                    <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Search files..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-background border border-border rounded px-2.5 py-1 pl-8 text-[11px] focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-slate-500/60"
+                    />
+                </div>
+
+                <div className="flex-1 overflow-y-auto scrollbar-none flex flex-col gap-0.5 pr-0.5">
                     {tree.length > 0 ? (
                         renderTree(tree)
                     ) : (
-                        <div className="text-xs text-muted-foreground py-2 text-center">
-                            No files yet
+                        <div className="text-xs text-muted-foreground py-4 text-center">
+                            {searchQuery ? "No matching files" : "No files yet"}
                         </div>
                     )}
                 </div>

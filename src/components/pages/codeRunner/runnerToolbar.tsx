@@ -13,6 +13,10 @@ type Props = {
   runnable: boolean;
   mode: "none" | "browser" | "server" | "web";
   onRun: () => void;
+  jsMode: "browser" | "server";
+  tsMode: "browser" | "server";
+  pyMode: "browser" | "server";
+  onModeChange: (langId: string, mode: "browser" | "server") => void;
 };
 
 export function RunnerToolbar({
@@ -25,6 +29,10 @@ export function RunnerToolbar({
   runnable,
   mode,
   onRun,
+  jsMode,
+  tsMode,
+  pyMode,
+  onModeChange,
 }: Props) {
   return (
     <div className="flex flex-col gap-3 border-b border-border bg-card px-3 py-1.5 md:flex-row md:items-center md:justify-between h-auto md:h-12 shrink-0 select-none">
@@ -38,7 +46,14 @@ export function RunnerToolbar({
             onChange={(v) => onLanguageChange?.(v)}
           />
         )}
-        <RunnerSettings endpoint={endpoint} onSave={onEndpointChange} />
+        <RunnerSettings
+          endpoint={endpoint}
+          onSave={onEndpointChange}
+          jsMode={jsMode}
+          tsMode={tsMode}
+          pyMode={pyMode}
+          onModeChange={onModeChange}
+        />
         <Button
           size="sm"
           onClick={onRun}

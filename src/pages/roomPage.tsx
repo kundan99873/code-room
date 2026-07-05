@@ -13,50 +13,50 @@ import { X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function RoomPageSkeleton() {
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Room Header Skeleton */}
-      <header className="h-14 border-b border-border/50 flex items-center justify-between px-4">
-        <div className="flex items-center space-x-3">
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-5 w-16 rounded-full" />
-        </div>
-        <div className="flex items-center space-x-3">
-          <Skeleton className="h-6 w-24 rounded-md" />
-          <Skeleton className="h-8 w-8 rounded-full" />
-        </div>
-      </header>
+    return (
+        <div className="min-h-screen bg-background flex flex-col">
+            {/* Room Header Skeleton */}
+            <header className="h-14 border-b border-border/50 flex items-center justify-between px-4">
+                <div className="flex items-center space-x-3">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <div className="flex items-center space-x-3">
+                    <Skeleton className="h-6 w-24 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                </div>
+            </header>
 
-      {/* Main Layout Skeleton */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar Skeleton */}
-        <aside className="w-60 border-r border-border/50 p-4 space-y-4 hidden md:block">
-          <div className="flex justify-between items-center">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-4" />
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-          </div>
-        </aside>
+            {/* Main Layout Skeleton */}
+            <div className="flex-1 flex overflow-hidden">
+                {/* Sidebar Skeleton */}
+                <aside className="w-60 border-r border-border/50 p-4 space-y-4 hidden md:block">
+                    <div className="flex justify-between items-center">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-2">
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                    </div>
+                </aside>
 
-        {/* Editor & Console Skeleton */}
-        <main className="flex-grow flex flex-col p-4 space-y-4">
-          <div className="flex items-center space-x-2">
-            <Skeleton className="h-8 w-20" />
-            <Skeleton className="h-8 w-20" />
-          </div>
-          <Skeleton className="flex-grow w-full rounded-lg" />
-          <div className="h-32 border border-border/50 rounded-lg p-4">
-            <Skeleton className="h-4 w-32 mb-2" />
-            <Skeleton className="h-4 w-full" />
-          </div>
-        </main>
-      </div>
-    </div>
-  );
+                {/* Editor & Console Skeleton */}
+                <main className="flex-grow flex flex-col p-4 space-y-4">
+                    <div className="flex items-center space-x-2">
+                        <Skeleton className="h-8 w-20" />
+                        <Skeleton className="h-8 w-20" />
+                    </div>
+                    <Skeleton className="flex-grow w-full rounded-lg" />
+                    <div className="h-32 border border-border/50 rounded-lg p-4">
+                        <Skeleton className="h-4 w-32 mb-2" />
+                        <Skeleton className="h-4 w-full" />
+                    </div>
+                </main>
+            </div>
+        </div>
+    );
 }
 
 import { toast } from "react-hot-toast";
@@ -401,8 +401,8 @@ export default function RoomPage() {
 
         socketInstance.on("new-message", (msg: { _id: string; senderId: string; senderName: string; content: string; createdAt: string }) => {
             console.log("Socket new-message event received in RoomPage:", msg);
-            const isSelf = 
-                (user && (msg.senderId === user.id || msg.senderId === user._id)) || 
+            const isSelf =
+                (user && (msg.senderId === user.id || msg.senderId === user._id)) ||
                 (user && msg.senderName === user.name);
             const isChatActive = panelOpenRef.current && activeRightTabRef.current === "chat";
 
@@ -745,9 +745,8 @@ export default function RoomPage() {
                 )}
 
                 {filesPanelOpen && (
-                    <div className={`shrink-0 animate-in slide-in-from-left duration-200 h-full border-r border-border ${
-                        isMobile ? "absolute inset-y-0 left-0 z-20 shadow-2xl bg-card" : "relative"
-                    }`}>
+                    <div className={`shrink-0 animate-in slide-in-from-left duration-200 h-full border-r border-border ${isMobile ? "absolute inset-y-0 left-0 z-20 shadow-2xl bg-card" : "relative"
+                        }`}>
                         <FileTabs
                             files={files}
                             activeId={activeFileId}
@@ -816,11 +815,10 @@ export default function RoomPage() {
                                             return (
                                                 <div
                                                     key={f.id}
-                                                    className={`group flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[11px] font-medium border transition-all cursor-pointer truncate max-w-[150px] shrink-0 ${
-                                                        isActive
+                                                    className={`group flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[11px] font-medium border transition-all cursor-pointer truncate max-w-[150px] shrink-0 ${isActive
                                                             ? "border-primary/20 bg-primary/10 text-white font-semibold"
                                                             : "border-border/45 text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                                                    }`}
+                                                        }`}
                                                     onClick={() => setActiveFileId(f.id)}
                                                 >
                                                     <span className="font-sans truncate">{f.name.split("/").pop()}</span>
@@ -852,28 +850,25 @@ export default function RoomPage() {
                     </div>
                 </div>
                 {panelOpen && (
-                    <div className={`shrink-0 animate-in slide-in-from-right duration-200 h-full w-72 lg:w-80 border-l border-border bg-card flex flex-col ${
-                        isMobile ? "absolute inset-y-0 right-0 z-20 shadow-2xl bg-card" : "relative"
-                    }`}>
+                    <div className={`shrink-0 animate-in slide-in-from-right duration-200 h-full w-72 lg:w-80 border-l border-border bg-card flex flex-col ${isMobile ? "absolute inset-y-0 right-0 z-20 shadow-2xl bg-card" : "relative"
+                        }`}>
                         {/* Sidebar Tabs */}
                         <div className="flex border-b border-border bg-muted/20 shrink-0">
                             <button
                                 onClick={() => setActiveRightTab("members")}
-                                className={`flex-1 py-2 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 cursor-pointer transition ${
-                                    activeRightTab === "members"
+                                className={`flex-1 py-2 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 cursor-pointer transition ${activeRightTab === "members"
                                         ? "border-primary text-foreground bg-card"
                                         : "border-transparent text-muted-foreground hover:text-foreground"
-                                }`}
+                                    }`}
                             >
                                 Members
                             </button>
                             <button
                                 onClick={() => setActiveRightTab("chat")}
-                                className={`flex-1 py-2 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 cursor-pointer transition ${
-                                    activeRightTab === "chat"
+                                className={`flex-1 py-2 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 cursor-pointer transition ${activeRightTab === "chat"
                                         ? "border-primary text-foreground bg-card"
                                         : "border-transparent text-muted-foreground hover:text-foreground"
-                                }`}
+                                    }`}
                             >
                                 Chat
                             </button>

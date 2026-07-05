@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { runOnPiston, getPistonEndpoint, LANG_BY_ID } from "@/lib/languages";
+import { runOnPiston, getPistonEndpoint, LANG_BY_ID, getLanguageRunMode } from "@/lib/languages";
 import { buildJsSandbox, isRunnerNoise, transformTypeScript } from "@/lib/utils";
 import type { OutLine } from "@/lib/data";
 
@@ -24,7 +24,11 @@ export function useCodeRunner({
   const startedAt = useRef(0);
 
   const lang = LANG_BY_ID[language];
-  const mode = lang?.runMode ?? "none";
+  const mode = lang
+    ? (language === "javascript" || language === "typescript" || language === "python"
+        ? getLanguageRunMode(language)
+        : lang.runMode)
+    : "none";
 
   const append = (l: OutLine) => setLines((p) => [...p, l]);
 

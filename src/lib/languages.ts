@@ -13,11 +13,22 @@ export const LANGUAGES: Lang[] = [
   {
     id: "javascript",
     label: "JavaScript",
+    piston: "javascript",
+    version: "18.15.0",
     ext: "js",
-    runMode: "browser",
     codex: "js",
+    wandbox: "nodejs-head",
+    runMode: "browser",
   },
-  { id: "typescript", label: "TypeScript", ext: "ts", runMode: "browser" },
+  {
+    id: "typescript",
+    label: "TypeScript",
+    piston: "typescript",
+    version: "5.0.3",
+    ext: "ts",
+    wandbox: "typescript-head",
+    runMode: "browser",
+  },
   {
     id: "python",
     label: "Python",
@@ -122,6 +133,18 @@ export function setPistonEndpoint(url: string) {
   if (typeof window === "undefined") return;
   if (url) localStorage.setItem(PISTON_ENDPOINT_KEY, url);
   else localStorage.removeItem(PISTON_ENDPOINT_KEY);
+}
+
+export function getLanguageRunMode(langId: string): "browser" | "server" {
+  if (typeof window === "undefined") return "browser";
+  const stored = localStorage.getItem(`runner_mode_${langId}`);
+  if (stored === "browser" || stored === "server") return stored;
+  return "browser";
+}
+
+export function setLanguageRunMode(langId: string, mode: "browser" | "server") {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(`runner_mode_${langId}`, mode);
 }
 
 export type RunResult = {
@@ -462,8 +485,8 @@ export async function runOnPiston(
   }
   const t0 = performance.now();
   try {
-    // Python runs locally through Pyodide.
-    if (langId === "python") {
+    // Python runs locally through Pyodide if in browser mode.
+    if (langId === "python" && getLanguageRunMode("python") === "browser") {
       const py = await runPythonInBrowser(source, stdin, allFiles, activeFileName);
       return { ...py, timeMs: Math.round(performance.now() - t0) };
     }

@@ -7,6 +7,7 @@ import { useIsMobile } from "@/hooks/useMobile";
 import {
   LANG_BY_ID, runOnPiston,
   getPistonEndpoint, setPistonEndpoint,
+  getLanguageRunMode, setLanguageRunMode,
 } from "@/lib/languages";
 import { toast } from "react-hot-toast";
 import type { OutLine } from "@/lib/data";
@@ -48,9 +49,28 @@ export function CodeRunner({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const startedAt = useRef<number>(0);
   const editorRef = useRef<any>(null);
+  const monacoRef = useRef<any>(null);
+
+  const [jsMode, setJsModeState] = useState(() => getLanguageRunMode("javascript"));
+  const [tsMode, setTsModeState] = useState(() => getLanguageRunMode("typescript"));
+  const [pyMode, setPyModeState] = useState(() => getLanguageRunMode("python"));
+
+  const handleModeChange = (langId: string, newMode: "browser" | "server") => {
+    setLanguageRunMode(langId, newMode);
+    if (langId === "javascript") setJsModeState(newMode);
+    if (langId === "typescript") setTsModeState(newMode);
+    if (langId === "python") setPyModeState(newMode);
+  };
 
   const lang = LANG_BY_ID[language];
-  const mode = lang?.runMode ?? "none";
+  const mode = useMemo(() => {
+    if (!lang) return "none";
+    if (language === "html" || language === "css") return "web";
+    if (language === "javascript" || language === "js") return jsMode;
+    if (language === "typescript" || language === "ts") return tsMode;
+    if (language === "python" || language === "py") return pyMode;
+    return lang.runMode;
+  }, [language, lang, jsMode, tsMode, pyMode]);
   const monacoLang = language === "cpp" ? "cpp" : language;
 
   const append = (l: OutLine) => setLines((p) => [...p, l]);
@@ -98,7 +118,27 @@ export function CodeRunner({
     if (mode === "browser") {
       setRunning(true);
       try {
-        const source = (language === "typescript" || language === "ts") ? await transformTypeScript(codeRef.current) : codeRef.current;
+        let source = codeRef.current;
+        if (language === "typescript" || language === "ts") {
+          if (monacoRef.current && editorRef.current) {
+            try {
+              const model = editorRef.current.getModel();
+              const worker = await monacoRef.current.languages.typescript.getTypeScriptWorker();
+              const client = await worker(model.uri);
+              const result = await client.getEmitOutput(model.uri.toString());
+              if (result && result.outputFiles && result.outputFiles[0]) {
+                source = result.outputFiles[0].text;
+              } else {
+                source = transformTypeScript(codeRef.current);
+              }
+            } catch (tsErr) {
+              console.warn("Monaco TS worker compile failed, falling back to regex:", tsErr);
+              source = transformTypeScript(codeRef.current);
+            }
+          } else {
+            source = transformTypeScript(codeRef.current);
+          }
+        }
         const iframe = iframeRef.current;
         if (iframe) iframe.srcdoc = buildJsSandbox(source);
         setTimeout(() => setRunning(false), 8000);
@@ -162,6 +202,7 @@ export function CodeRunner({
 
   const handleEditorMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
+    monacoRef.current = monaco;
     onEditorMount?.(editor, monaco);
 
     // Register keyboard commands directly in Monaco Editor
@@ -230,7 +271,7 @@ export function CodeRunner({
       ref={iframeRef}
       mode={mode}
       lines={lines}
-        running={running}
+      running={running}
       execMs={execMs}
       previewSrc={previewSrc}
       value={value}
@@ -259,6 +300,10 @@ export function CodeRunner({
         runnable={runnable}
         mode={mode}
         onRun={run}
+        jsMode={jsMode}
+        tsMode={tsMode}
+        pyMode={pyMode}
+        onModeChange={handleModeChange}
       />
 
       <div className="flex-1 min-h-0 p-2 md:p-3 overflow-y-auto">

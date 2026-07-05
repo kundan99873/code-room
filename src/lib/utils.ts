@@ -50,6 +50,7 @@ export function transformTypeScript(source: string): string {
 }
 
 export function buildJsSandbox(source: string): string {
+  const escaped = source.replace(/<\/script>/ig, "<\\/script>");
   return `<!doctype html><html><head><meta charset="utf-8"></head><body><script>
     (function(){
       const safe = (v) => {
@@ -66,7 +67,11 @@ export function buildJsSandbox(source: string): string {
         console[k] = (...a) => { send(k, a); orig(...a); };
       });
       window.addEventListener("error", (e) => {
-        send("error", [e.message + (e.lineno ? " (line " + e.lineno + ")" : "")]);
+        let line = e.lineno;
+        if (line && line > 41) {
+          line = line - 41;
+        }
+        send("error", [e.message + (line ? " (line " + line + ")" : "")]);
         send("done", []);
       });
       window.addEventListener("unhandledrejection", (e) => {
@@ -87,7 +92,7 @@ export function buildJsSandbox(source: string): string {
       };
       const send = (level, args) => parent.postMessage({ __runner: true, level, args: args.map(safe) }, "*");
       try {
-        ${source}
+        ${escaped}
         send("done", []);
       } catch (e) {
         send("error", [e.stack || e.message || String(e)]);
