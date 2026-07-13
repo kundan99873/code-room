@@ -82,6 +82,26 @@ export function CodeRunner({
   }, [value, mode]);
 
   useEffect(() => {
+    if (language === "plaintext") {
+      setLines([{ level: "log", text: value }]);
+    } else if (language === "json") {
+      if (!value.trim()) {
+        setLines([]);
+        return;
+      }
+      try {
+        JSON.parse(value);
+        setLines([{ level: "log", text: value }]);
+      } catch (e: any) {
+        setLines([
+          { level: "error", text: `Invalid JSON: ${e.message}` },
+          { level: "log", text: value },
+        ]);
+      }
+    }
+  }, [value, language]);
+
+  useEffect(() => {
     if (mode !== "browser") return;
     const onMsg = (e: MessageEvent) => {
       const d: any = e.data;
@@ -242,9 +262,11 @@ export function CodeRunner({
   };
 
   const placeholder = useMemo(() => {
+    if (language === "plaintext") return "Type text in the editor to see it here.";
+    if (language === "json") return "Type valid JSON in the editor to view it parsed.";
     if (mode === "web") return "Edit your HTML/CSS/JS — preview updates automatically.";
     return "Press ▶ Run (or ⌘/Ctrl + Enter) to see the output here.";
-  }, [mode]);
+  }, [mode, language]);
 
   const editorPanel = (
     <EditorPanel

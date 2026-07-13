@@ -271,6 +271,9 @@ export default function Dashboard() {
             const q = query.toLowerCase();
             list = list.filter((r) => r.name.toLowerCase().includes(q) || r.language.toLowerCase().includes(q));
         }
+        if (sort === "recent") {
+            list.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+        }
         if (sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
         if (sort === "language") list.sort((a, b) => a.language.localeCompare(b.language));
         return list;

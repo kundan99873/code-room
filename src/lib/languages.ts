@@ -114,6 +114,18 @@ export const LANGUAGES: Lang[] = [
     wandbox: "bash",
     runMode: "server",
   },
+  {
+    id: "plaintext",
+    label: "Plain Text",
+    ext: "txt",
+    runMode: "none",
+  },
+  {
+    id: "json",
+    label: "JSON",
+    ext: "json",
+    runMode: "none",
+  },
 ];
 
 export const LANG_BY_ID: Record<string, Lang> = {
@@ -702,6 +714,9 @@ INSERT INTO numbers (val) VALUES
 SELECT val FROM numbers;
 `,
     json: `[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+`,
+    plaintext: `Hello, World!
+This is a simple text file.
 `,
   };
   return map[lang] ?? "";

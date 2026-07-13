@@ -40,6 +40,7 @@ export const LANG_COLORS: Record<string, string> = {
   ruby: "#cc342d",
   bash: "#4eaa25",
   json: "#a3a3a3",
+  plaintext: "#78716c",
 };
 
 export const FEATURES = [
