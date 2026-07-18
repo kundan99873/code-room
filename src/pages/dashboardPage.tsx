@@ -293,17 +293,52 @@ export default function Dashboard() {
 
     return (
         <div className="relative min-h-screen overflow-hidden">
+            {/* Custom animations for premium UI */}
+
             {/* Ambient background */}
             <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
-                <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-primary/20 blur-3xl" />
-                <div className="absolute top-1/3 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-500/10 blur-3xl" />
-                <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+                <motion.div
+                    animate={{
+                        x: [0, 40, -20, 0],
+                        y: [0, -30, 20, 0],
+                    }}
+                    transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
+                    className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-primary/25 blur-3xl opacity-80"
+                />
+                <motion.div
+                    animate={{
+                        x: [0, -50, 30, 0],
+                        y: [0, 40, -30, 0],
+                    }}
+                    transition={{
+                        duration: 25,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
+                    className="absolute top-1/3 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-500/15 blur-3xl opacity-70"
+                />
+                <motion.div
+                    animate={{
+                        x: [0, 30, -40, 0],
+                        y: [0, 20, 40, 0],
+                    }}
+                    transition={{
+                        duration: 22,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
+                    className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl opacity-60"
+                />
                 <div
-                    className="absolute inset-0 opacity-[0.04]"
+                    className="absolute inset-0 opacity-[0.035]"
                     style={{
                         backgroundImage:
                             "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
-                        backgroundSize: "32px 32px",
+                        backgroundSize: "40px 40px",
                     }}
                 />
             </div>
@@ -313,29 +348,29 @@ export default function Dashboard() {
                 <motion.section
                     initial={{ opacity: 0, y: -12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="mb-6"
+                    transition={{ duration: 0.5 }}
+                    className="mb-8"
                 >
                     <div className="flex flex-wrap items-end justify-between gap-4">
                         <div className="min-w-0">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 backdrop-blur px-3 py-1 text-xs text-muted-foreground">
-                                <span className="relative flex h-2 w-2">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/45 backdrop-blur px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm transition hover:border-muted-foreground/30">
+                                <span className="relative flex h-2.5 w-2.5">
                                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
                                 </span>
                                 Collaborative spaces
                             </div>
-                            <h1 className="mt-3 font-display text-4xl md:text-5xl font-bold tracking-tight">
-                                <span className="bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
+                            <h1 className="mt-4 font-display text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight">
+                                <span className="bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] hover:animate-[gradient-shift_3s_ease_infinite]">
                                     {selectedTeamId && teamDetails ? teamDetails.team.name : activeTab === "rooms" ? "Your Rooms" : "Teams & Organizations"}
                                 </span>
                             </h1>
-                            <p className="text-muted-foreground text-sm md:text-base mt-2 max-w-xl">
+                            <p className="text-muted-foreground text-sm md:text-base mt-3 max-w-2xl leading-relaxed">
                                 {selectedTeamId && teamDetails
                                     ? teamDetails.team.description || "A workspace shared among all team members."
                                     : activeTab === "rooms"
-                                    ? "Spin up a session, invite teammates, and code together in real time — with live previews and instant runtimes."
-                                    : "Group your rooms into Organizations or Teams. All members gain shared room access automatically."}
+                                        ? "Spin up an interactive development room, invite team members in real-time, share terminal outputs, and build products together."
+                                        : "Organize rooms into collaborative teams and shared spaces. All organization members gain access instantly."}
                             </p>
                         </div>
                     </div>
@@ -343,25 +378,39 @@ export default function Dashboard() {
 
                 {/* Tab Switcher */}
                 {!selectedTeamId && (
-                    <div className="flex items-center gap-1 rounded-xl border border-border bg-card/60 backdrop-blur-xl p-1 w-fit mb-6">
+                    <div className="flex items-center gap-1 rounded-2xl border border-border/80 bg-card/40 backdrop-blur-xl p-1.5 w-fit mb-8 shadow-inner">
                         <button
                             onClick={() => setActiveTab("rooms")}
-                            className={`px-4 py-2 text-sm rounded-lg font-medium transition cursor-pointer ${
-                                activeTab === "rooms"
-                                    ? "bg-primary text-primary-foreground shadow"
+                            className={`relative px-5 py-2 text-sm rounded-xl font-medium transition cursor-pointer flex items-center gap-1.5 z-10 select-none ${activeTab === "rooms"
+                                    ? "text-primary-foreground font-semibold"
                                     : "text-muted-foreground hover:text-foreground"
-                            }`}
+                                }`}
                         >
+                            {activeTab === "rooms" && (
+                                <motion.div
+                                    layoutId="activeTabIndicator"
+                                    className="absolute inset-0 bg-primary rounded-xl -z-10 shadow-lg shadow-primary/20"
+                                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                            )}
+                            <LayoutGrid className="h-4 w-4" />
                             Rooms
                         </button>
                         <button
                             onClick={() => setActiveTab("teams")}
-                            className={`px-4 py-2 text-sm rounded-lg font-medium transition cursor-pointer ${
-                                activeTab === "teams"
-                                    ? "bg-primary text-primary-foreground shadow"
+                            className={`relative px-5 py-2 text-sm rounded-xl font-medium transition cursor-pointer flex items-center gap-1.5 z-10 select-none ${activeTab === "teams"
+                                    ? "text-primary-foreground font-semibold"
                                     : "text-muted-foreground hover:text-foreground"
-                            }`}
+                                }`}
                         >
+                            {activeTab === "teams" && (
+                                <motion.div
+                                    layoutId="activeTabIndicator"
+                                    className="absolute inset-0 bg-primary rounded-xl -z-10 shadow-lg shadow-primary/20"
+                                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                            )}
+                            <Building2 className="h-4 w-4" />
                             Teams
                         </button>
                     </div>
@@ -375,12 +424,12 @@ export default function Dashboard() {
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.4, delay: 0.05 }}
-                            className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6"
+                            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
                         >
-                            <StatCard icon={<Hash className="h-4 w-4" />} label="Total Rooms" value={stats.total} tint="from-indigo-500/20 to-indigo-500/0" />
-                            <StatCard icon={<Activity className="h-4 w-4" />} label="Active (24h)" value={stats.recent} tint="from-emerald-500/20 to-emerald-500/0" />
-                            <StatCard icon={<Globe2 className="h-4 w-4" />} label="Shared" value={stats.shared} tint="from-cyan-500/20 to-cyan-500/0" />
-                            <StatCard icon={<Sparkles className="h-4 w-4" />} label="Owned" value={stats.mine} tint="from-fuchsia-500/20 to-fuchsia-500/0" />
+                            <StatCard icon={<Hash className="h-5 w-5" />} label="Total Rooms" value={stats.total} tint="from-indigo-500/25 to-indigo-500/0" />
+                            <StatCard icon={<Activity className="h-5 w-5" />} label="Active (24h)" value={stats.recent} tint="from-emerald-500/25 to-emerald-500/0" />
+                            <StatCard icon={<Globe2 className="h-5 w-5" />} label="Shared" value={stats.shared} tint="from-cyan-500/25 to-cyan-500/0" />
+                            <StatCard icon={<Sparkles className="h-5 w-5" />} label="Owned" value={stats.mine} tint="from-fuchsia-500/25 to-fuchsia-500/0" />
                         </motion.section>
 
                         {/* Action bar */}
@@ -388,145 +437,96 @@ export default function Dashboard() {
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.4, delay: 0.1 }}
-                            className="rounded-2xl border border-border bg-card/60 backdrop-blur-xl p-3 md:p-4 shadow-sm"
+                            className="rounded-2xl border border-border/80 bg-card/35 backdrop-blur-2xl p-4 shadow-lg mb-6"
                         >
-                            <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
-                                {/* Search */}
-                                <div className="relative flex-1 min-w-0">
-                                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        value={query}
-                                        onChange={(e) => setQuery(e.target.value)}
-                                        placeholder="Search rooms by name or language…"
-                                        className="pl-9 h-11 bg-background/60 border-border focus-visible:ring-2 focus-visible:ring-primary/40"
-                                    />
-                                </div>
-
-                                {/* Join */}
-                                <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto">
-                                    <div className="relative flex-1 sm:flex-initial">
-                                        <Link2 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+                                {/* Search & Join Container */}
+                                <div className="flex flex-col md:flex-row gap-3 flex-1 min-w-0">
+                                    {/* Search */}
+                                    <div className="relative flex-1 min-w-0 group">
+                                        <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                         <Input
-                                            placeholder="Paste room ID…"
-                                            value={joinId}
-                                            onChange={(e) => setJoinId(e.target.value)}
-                                            className="pl-9 h-11 w-full sm:w-40 md:w-64 bg-background/60"
-                                            onKeyDown={(e) => {
-                                                if (e.key === "Enter" && joinId.trim()) {
-                                                    navigate("/room/" + joinId.trim());
-                                                }
-                                            }}
+                                            value={query}
+                                            onChange={(e) => setQuery(e.target.value)}
+                                            placeholder="Search rooms by name or language…"
+                                            className="pl-10 h-12 bg-background/40 border-border/60 focus-visible:bg-background/80 focus-visible:ring-primary/30 transition-all text-sm rounded-xl"
                                         />
                                     </div>
-                                    <Button
-                                        variant="outline"
-                                        className="h-11 cursor-pointer flex-1 sm:flex-initial"
-                                        onClick={() => joinId.trim() && navigate("/room/" + joinId.trim())}
-                                    >
-                                        Join <ArrowRight className="ml-1 h-4 w-4" />
-                                    </Button>
 
-                                    <Dialog open={open} onOpenChange={setOpen}>
-                                        <DialogTrigger asChild>
-                                            <Button className="h-11 gap-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 text-white border-0 shadow-[0_8px_30px_-10px_hsl(265_80%_60%)] hover:shadow-[0_12px_40px_-10px_hsl(265_80%_60%)] hover:scale-[1.02] transition cursor-pointer w-full sm:w-auto">
-                                                <Plus className="h-4 w-4" /> New Room
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent className="sm:max-w-[460px] border border-border/80 bg-card/95 backdrop-blur-xl shadow-2xl p-6 rounded-2xl animate-in duration-300">
-                                            <DialogHeader>
-                                                <DialogTitle className="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent flex items-center gap-2">
-                                                    <Sparkles className="h-5 w-5 text-amber-300 animate-pulse" /> Create a coding room
-                                                </DialogTitle>
-                                            </DialogHeader>
-                                            <div className="space-y-5 mt-2">
-                                                <div className="space-y-2">
-                                                    <Label className="text-xs font-semibold text-foreground/80 tracking-wide">Room name</Label>
-                                                    <Input
-                                                        value={name}
-                                                        onChange={(e) => setName(e.target.value)}
-                                                        placeholder="e.g. quicksort-pair"
-                                                        className="h-10 bg-background/50 border-border focus-visible:ring-primary/30"
-                                                    />
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="space-y-2">
-                                                        <Label className="text-xs font-semibold text-foreground/80 tracking-wide">Language</Label>
-                                                        <Select value={language} onValueChange={setLanguage}>
-                                                            <SelectTrigger className="w-full h-10 bg-background/50 border-border">
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {LANGUAGES.map((l) => (
-                                                                    <SelectItem key={l.id} value={l.id}>{l.label}</SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <Label className="text-xs font-semibold text-foreground/80 tracking-wide">Visibility</Label>
-                                                        <Select value={isPublic} onValueChange={(v) => setIsPublic(v as "public" | "private")}>
-                                                            <SelectTrigger className="w-full h-10 bg-background/50 border-border">
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value="public">Public — anyone with link</SelectItem>
-                                                                <SelectItem value="private">Private — only you</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                </div>
-                                                {/* Team Selection */}
-                                                <div className="space-y-2">
-                                                    <Label className="text-xs font-semibold text-foreground/80 tracking-wide">Team Space (Optional)</Label>
-                                                    <Select value={roomTeamId} onValueChange={setRoomTeamId}>
-                                                        <SelectTrigger className="w-full h-10 bg-background/50 border-border">
-                                                            <SelectValue />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="none">No Team (Personal Room)</SelectItem>
-                                                            {teams.map((t) => (
-                                                                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                            </div>
-                                            <DialogFooter className="mt-6">
-                                                <Button
-                                                    onClick={create}
-                                                    className="h-10 w-full md:w-auto px-5 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 text-white border-0 shadow-[0_8px_30px_-10px_rgba(99,102,241,0.5)] hover:shadow-[0_12px_40px_-10px_rgba(99,102,241,0.7)] hover:scale-[1.01] transition duration-200 cursor-pointer font-medium"
-                                                >
-                                                    <Sparkles className="mr-1.5 h-4 w-4" /> Create room
-                                                </Button>
-                                            </DialogFooter>
-                                        </DialogContent>
-                                    </Dialog>
+                                    {/* Join Room */}
+                                    <div className="flex items-center gap-2 md:w-80 lg:w-96 group">
+                                        <div className="relative flex-1 min-w-0">
+                                            <Link2 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                            <Input
+                                                placeholder="Paste room ID…"
+                                                value={joinId}
+                                                onChange={(e) => setJoinId(e.target.value)}
+                                                className="pl-10 h-12 bg-background/40 border-border/60 focus-visible:bg-background/80 focus-visible:ring-primary/30 transition-all text-sm rounded-xl"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter" && joinId.trim()) {
+                                                        navigate("/room/" + joinId.trim());
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            className="h-12 px-4 cursor-pointer hover:bg-muted/80 rounded-xl font-medium border-border/60 hover:border-muted-foreground/30 active:scale-95 transition-all flex items-center gap-1.5"
+                                            onClick={() => joinId.trim() && navigate("/room/" + joinId.trim())}
+                                        >
+                                            Join <ArrowRight className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                {/* Create Button */}
+                                <div className="w-full lg:w-auto">
+                                    <Button
+                                        onClick={() => {
+                                            setRoomTeamId("none");
+                                            setOpen(true);
+                                        }}
+                                        className="h-12 w-full lg:w-auto px-6 font-semibold gap-2 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 text-white border-0 shadow-[0_8px_30px_-8px_rgba(99,102,241,0.5)] hover:shadow-[0_12px_40px_-8px_rgba(99,102,241,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer rounded-xl glow-btn gradient-bg-animate"
+                                    >
+                                        <Plus className="h-5 w-5" /> New Room
+                                    </Button>
                                 </div>
                             </div>
 
                             {/* Filter row */}
-                            <div className="mt-3 flex flex-wrap items-center gap-2">
-                                <div className="flex items-center gap-1 rounded-lg border border-border bg-background/50 p-1">
+                            <div className="mt-4 pt-4 border-t border-border/30 flex flex-wrap items-center gap-3">
+                                {/* Filter Toggle Pills */}
+                                <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-background/35 p-1">
                                     {(["all", "public", "private", "mine"] as FilterType[]).map((f) => (
                                         <button
                                             key={f}
                                             onClick={() => setFilter(f)}
-                                            className={`px-3 py-1 text-xs rounded-md transition capitalize cursor-pointer ${filter === f
-                                                ? "bg-primary text-primary-foreground shadow"
-                                                : "text-muted-foreground hover:text-foreground"
+                                            className={`relative px-4 py-1.5 text-xs font-semibold rounded-lg transition capitalize cursor-pointer select-none ${filter === f
+                                                    ? "text-primary-foreground font-bold"
+                                                    : "text-muted-foreground hover:text-foreground"
                                                 }`}
                                         >
+                                            {filter === f && (
+                                                <motion.div
+                                                    layoutId="activeFilterIndicator"
+                                                    className="absolute inset-0 bg-primary rounded-lg -z-10 shadow-sm"
+                                                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                                                />
+                                            )}
                                             {f}
                                         </button>
                                     ))}
                                 </div>
 
+                                {/* Language Filter Dropdown */}
                                 <Select value={langFilter} onValueChange={setLangFilter}>
-                                    <SelectTrigger className="h-8 w-40 text-xs bg-background/50">
-                                        <Filter className="h-3.5 w-3.5 mr-1" />
-                                        <SelectValue placeholder="Language" />
+                                    <SelectTrigger className="h-9 w-40 text-xs bg-background/35 border-border/60 rounded-xl hover:bg-background/60 transition-colors">
+                                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                                            <Filter className="h-3.5 w-3.5" />
+                                            <SelectValue placeholder="Language" />
+                                        </div>
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="bg-card/95 backdrop-blur-xl border border-border/80">
                                         <SelectItem value="all">All languages</SelectItem>
                                         {usedLanguages.map((l) => (
                                             <SelectItem key={l} value={l}>{LANG_BY_ID[l]?.label ?? l}</SelectItem>
@@ -534,31 +534,40 @@ export default function Dashboard() {
                                     </SelectContent>
                                 </Select>
 
+                                {/* Sort Dropdown */}
                                 <Select value={sort} onValueChange={(v) => setSort(v as SortType)}>
-                                    <SelectTrigger className="h-8 w-36 text-xs bg-background/50">
+                                    <SelectTrigger className="h-9 w-40 text-xs bg-background/35 border-border/60 rounded-xl hover:bg-background/60 transition-colors">
+                                        <span className="text-muted-foreground">Sort: </span>
                                         <SelectValue placeholder="Sort" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="bg-card/95 backdrop-blur-xl border border-border/80">
                                         <SelectItem value="recent">Recently updated</SelectItem>
                                         <SelectItem value="name">Name (A→Z)</SelectItem>
                                         <SelectItem value="language">Language</SelectItem>
                                     </SelectContent>
                                 </Select>
 
-                                <div className="ml-auto flex items-center gap-1 rounded-lg border border-border bg-background/50 p-1">
+                                {/* Grid/List switcher */}
+                                <div className="ml-auto flex items-center gap-1 rounded-xl border border-border/60 bg-background/35 p-1">
                                     <button
                                         onClick={() => setView("grid")}
                                         title="Grid view"
-                                        className={`p-1.5 rounded-md transition cursor-pointer ${view === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                                        className={`relative p-2 rounded-lg transition-all cursor-pointer ${view === "grid"
+                                                ? "bg-primary text-primary-foreground shadow animate-in fade-in"
+                                                : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                                            }`}
                                     >
-                                        <LayoutGrid className="h-3.5 w-3.5" />
+                                        <LayoutGrid className="h-4 w-4" />
                                     </button>
                                     <button
                                         onClick={() => setView("list")}
                                         title="List view"
-                                        className={`p-1.5 rounded-md transition cursor-pointer ${view === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                                        className={`relative p-2 rounded-lg transition-all cursor-pointer ${view === "list"
+                                                ? "bg-primary text-primary-foreground shadow animate-in fade-in"
+                                                : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                                            }`}
                                     >
-                                        <Rows3 className="h-3.5 w-3.5" />
+                                        <Rows3 className="h-4 w-4" />
                                     </button>
                                 </div>
                             </div>
@@ -847,11 +856,10 @@ export default function Dashboard() {
                                                         <p className="text-[10px] text-muted-foreground truncate">{member.userId.email}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2 shrink-0 ml-2">
-                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full capitalize font-medium ${
-                                                            member.role === "owner"
+                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full capitalize font-medium ${member.role === "owner"
                                                                 ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
                                                                 : "bg-muted text-muted-foreground"
-                                                        }`}>
+                                                            }`}>
                                                             {member.role}
                                                         </span>
                                                         {teamDetails.role === "owner" && member.role !== "owner" && (
@@ -917,6 +925,78 @@ export default function Dashboard() {
                     </motion.section>
                 )}
             </main>
+
+            {/* Create Room Dialog (Shared globally by Personal and Team view) */}
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent className="sm:max-w-[460px] border border-border/80 bg-card/95 backdrop-blur-xl shadow-2xl p-6 rounded-2xl animate-in duration-300">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-amber-300 animate-pulse" /> Create a coding room
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-5 mt-2">
+                        <div className="space-y-2">
+                            <Label className="text-xs font-semibold text-foreground/80 tracking-wide">Room name</Label>
+                            <Input
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="e.g. quicksort-pair"
+                                className="h-10 bg-background/50 border-border focus-visible:ring-primary/30"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-xs font-semibold text-foreground/80 tracking-wide">Language</Label>
+                                <Select value={language} onValueChange={setLanguage}>
+                                    <SelectTrigger className="w-full h-10 bg-background/50 border-border">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {LANGUAGES.map((l) => (
+                                            <SelectItem key={l.id} value={l.id}>{l.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-xs font-semibold text-foreground/80 tracking-wide">Visibility</Label>
+                                <Select value={isPublic} onValueChange={(v) => setIsPublic(v as "public" | "private")}>
+                                    <SelectTrigger className="w-full h-10 bg-background/50 border-border">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="public">Public — anyone with link</SelectItem>
+                                        <SelectItem value="private">Private — only you</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        {/* Team Selection */}
+                        <div className="space-y-2">
+                            <Label className="text-xs font-semibold text-foreground/80 tracking-wide">Team Space (Optional)</Label>
+                            <Select value={roomTeamId} onValueChange={setRoomTeamId}>
+                                <SelectTrigger className="w-full h-10 bg-background/50 border-border">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">No Team (Personal Room)</SelectItem>
+                                    {teams.map((t) => (
+                                        <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter className="mt-6">
+                        <Button
+                            onClick={create}
+                            className="h-10 w-full md:w-auto px-5 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 text-white border-0 shadow-[0_8px_30px_-10px_rgba(99,102,241,0.5)] hover:shadow-[0_12px_40px_-10px_rgba(99,102,241,0.7)] hover:scale-[1.01] transition duration-200 cursor-pointer font-medium"
+                        >
+                            <Sparkles className="mr-1.5 h-4 w-4" /> Create room
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
