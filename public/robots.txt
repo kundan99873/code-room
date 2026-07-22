@@ -1,0 +1,12 @@
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+
+# Exclude dynamic/private paths to avoid index bloat and search crawler errors
+Disallow: /room/*
+Disallow: /dashboard
+Disallow: /reset-password
+
+# Link to sitemap
+Sitemap: https://codesroom.in/sitemap.xml

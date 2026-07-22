@@ -1,4 +1,3 @@
-import { Code2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 
@@ -8,8 +7,8 @@ export default function Footer() {
     <footer className="border-t border-border bg-card/40">
       <div className="mx-auto max-w-7xl px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <div className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
-            <Code2 className="h-3.5 w-3.5" />
+          <div className="h-7 w-7 overflow-hidden rounded-md border border-border bg-card p-0.5 shadow-xs">
+            <img src="/favicon.png" className="h-full w-full object-contain rounded-sm" alt="CodesRoom Logo" />
           </div>
           <span>
             © {new Date().getFullYear()} Coderoom

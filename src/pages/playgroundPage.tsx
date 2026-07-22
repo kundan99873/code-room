@@ -3,6 +3,7 @@ import { starter } from "@/lib/languages";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Sparkles } from "lucide-react";
+import SEO from "@/components/seo";
 
 export default function PlaygroundPage() {
   const [language, setLanguage] = useState("javascript");
@@ -15,6 +16,11 @@ export default function PlaygroundPage() {
 
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-background">
+      <SEO 
+        title="Online Code Playground & Compiler"
+        description="Write, execute, and compile code instantly in your browser in Python, JavaScript, C++, Java, and 15+ other programming languages."
+        keywords="online IDE, online code runner, online compiler, python online editor, javascript playground, codesroom playground"
+      />
       <CodeRunner
         value={code}
         language={language}

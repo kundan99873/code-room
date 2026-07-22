@@ -3,6 +3,7 @@ import Editor from "@monaco-editor/react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
+import SEO from "@/components/seo";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -203,6 +204,11 @@ export default function JsonPage() {
 
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-background">
+      <SEO 
+        title="JSON Toolkit - Format, Minify & Convert JSON"
+        description="Verify, validate, format, minify, and parse JSON instantly with our online JSON toolkit. View your data in JSON Tree, XML, YAML or plaintext formats."
+        keywords="json formatter, json parser, json validator, json to yaml, json to xml, beautify json, codesroom json"
+      />
       <div className="border-b border-border bg-card">
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Code2 } from "lucide-react";
 import SignInForm from "@/components/pages/auth/signInForm";
 import SignUpForm from "@/components/pages/auth/signUpForm";
 import ForgotPasswordForm from "@/components/pages/auth/forgotPasswordForm";
+import SEO from "@/components/seo";
 
 export default function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
@@ -18,6 +18,11 @@ export default function AuthPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-background px-4 py-10 overflow-hidden">
+      <SEO 
+        title="Sign In & Get Started"
+        description="Log in or create a CodesRoom account to save your playgrounds, manage real-time coding rooms, and pair program with your team."
+        keywords="codesroom login, codesroom sign up, codesroom authentication"
+      />
       {/* Ambient background */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 -left-40 h-112 w-md rounded-full bg-primary/20 blur-3xl" />
@@ -36,8 +41,8 @@ export default function AuthPage() {
         {/* Card */}
         <div className="rounded-2xl border border-border/70 bg-card/70 backdrop-blur-xl p-7 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.35)]">
           <div className="flex flex-col items-center text-center">
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-linear-to-br from-primary to-primary/70 text-primary-foreground shadow-[0_10px_30px_-12px_color-mix(in_oklab,var(--primary)_70%,transparent)]">
-              <Code2 className="h-5 w-5" />
+            <div className="h-11 w-11 overflow-hidden rounded-xl border border-border/80 bg-card p-1 shadow-md">
+              <img src="/favicon.png" className="h-full w-full object-contain rounded-lg" alt="CodesRoom Logo" />
             </div>
             <h1 className="mt-4 text-2xl font-semibold tracking-tight">
               {isForgot
