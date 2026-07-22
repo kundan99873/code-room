@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import SignInForm from "@/components/pages/auth/signInForm";
+import BrandLogo from "@/components/common/brandLogo";
 import SignUpForm from "@/components/pages/auth/signUpForm";
 import ForgotPasswordForm from "@/components/pages/auth/forgotPasswordForm";
 import SEO from "@/components/seo";
@@ -18,7 +19,7 @@ export default function AuthPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-background px-4 py-10 overflow-hidden">
-      <SEO 
+      <SEO
         title="Sign In & Get Started"
         description="Log in or create a CodesRoom account to save your playgrounds, manage real-time coding rooms, and pair program with your team."
         keywords="codesroom login, codesroom sign up, codesroom authentication"
@@ -41,8 +42,8 @@ export default function AuthPage() {
         {/* Card */}
         <div className="rounded-2xl border border-border/70 bg-card/70 backdrop-blur-xl p-7 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.35)]">
           <div className="flex flex-col items-center text-center">
-            <div className="h-11 w-11 overflow-hidden rounded-xl border border-border/80 bg-card p-1 shadow-md">
-              <img src="/favicon.png" className="h-full w-full object-contain rounded-lg" alt="CodesRoom Logo" />
+            <div className="h-10 w-40 overflow-hidden mb-2">
+              <BrandLogo className="h-full w-full object-contain" />
             </div>
             <h1 className="mt-4 text-2xl font-semibold tracking-tight">
               {isForgot

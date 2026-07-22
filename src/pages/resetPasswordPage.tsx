@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import BrandLogo from "@/components/common/brandLogo";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { resetPasswordRequest } from "@/api/auth";
 import { toast } from "react-hot-toast";
@@ -67,8 +68,8 @@ export default function ResetPasswordPage() {
         {/* Card */}
         <div className="rounded-2xl border border-border/70 bg-card/70 backdrop-blur-xl p-7 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.35)]">
           <div className="flex flex-col items-center text-center">
-            <div className="h-11 w-11 overflow-hidden rounded-xl border border-border/80 bg-card p-1 shadow-md">
-              <img src="/favicon.png" className="h-full w-full object-contain rounded-lg" alt="CodesRoom Logo" />
+            <div className="h-10 w-40 overflow-hidden mb-2">
+              <BrandLogo className="h-full w-full object-contain" />
             </div>
             <h1 className="mt-4 text-2xl font-semibold tracking-tight">
               Reset Your Password
