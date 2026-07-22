@@ -21,7 +21,9 @@ export default function SEO({
   ogUrl,
   ogType = "website",
 }: SEOProps) {
-  const siteTitle = title ? `${title} | CodesRoom` : "CodesRoom - Real-Time Collaborative Coding & Playgrounds";
+  const siteTitle = title 
+    ? (title.includes("CodesRoom") ? title : `${title} | CodesRoom`) 
+    : "CodesRoom - Real-Time Collaborative Coding & Playgrounds";
   const siteDesc = description || "Collaborate on code in real-time, run programs in 15+ languages, format/minify JSON, and pair program with CodesRoom.";
   const siteKeywords = keywords || "collaborative coding, online compiler, live code editor, pair programming, codesroom, json formatter, codesroom.in";
   
