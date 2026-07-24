@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 interface SEOProps {
   title?: string;
   description?: string;
@@ -27,37 +29,64 @@ export default function SEO({
   const siteDesc = description || "Collaborate on code in real-time, run programs in 15+ languages, format/minify JSON, and pair program with CodesRoom.";
   const siteKeywords = keywords || "collaborative coding, online compiler, live code editor, pair programming, codesroom, json formatter, codesroom.in";
   
-  // Safe browser check for absolute URL building
-  const siteUrl = ogUrl || (typeof window !== "undefined" ? window.location.href : "https://codesroom.in");
+  const siteUrl = ogUrl || (typeof window !== "undefined" ? window.location.origin + window.location.pathname : "https://codesroom.in");
   const defaultOgImage = "https://codesroom.in/og-image.png";
 
-  return (
-    <>
-      {/* Title */}
-      <title>{siteTitle}</title>
+  useEffect(() => {
+    // Update document title
+    document.title = siteTitle;
 
-      {/* Basic Search Meta */}
-      <meta name="description" content={siteDesc} />
-      <meta name="keywords" content={siteKeywords} />
-      <meta name="robots" content="index, follow" />
+    // Helper function to update or create meta tags in head
+    const updateMetaTag = (attrName: "name" | "property", attrValue: string, content: string) => {
+      let meta = document.querySelector(`meta[${attrName}="${attrValue}"]`);
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.setAttribute(attrName, attrValue);
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute("content", content);
+    };
 
-      {/* Canonical Link */}
-      <link rel="canonical" href={canonical || siteUrl} />
+    // Update standard search engine metas
+    updateMetaTag("name", "description", siteDesc);
+    updateMetaTag("name", "keywords", siteKeywords);
+    updateMetaTag("name", "robots", "index, follow");
 
-      {/* Open Graph / Facebook */}
-      <meta property="og:type" content={ogType} />
-      <meta property="og:title" content={ogTitle || siteTitle} />
-      <meta property="og:description" content={ogDescription || siteDesc} />
-      <meta property="og:url" content={siteUrl} />
-      <meta property="og:image" content={ogImage || defaultOgImage} />
-      <meta property="og:site_name" content="CodesRoom" />
+    // Update Canonical URL link tag
+    let link = document.querySelector('link[rel="canonical"]');
+    if (!link) {
+      link = document.createElement("link");
+      link.setAttribute("rel", "canonical");
+      document.head.appendChild(link);
+    }
+    link.setAttribute("href", canonical || siteUrl);
 
-      {/* Twitter Cards */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={ogTitle || siteTitle} />
-      <meta name="twitter:description" content={ogDescription || siteDesc} />
-      <meta name="twitter:url" content={siteUrl} />
-      <meta name="twitter:image" content={ogImage || defaultOgImage} />
-    </>
-  );
+    // Update Open Graph (Facebook/LinkedIn) social metas
+    updateMetaTag("property", "og:type", ogType);
+    updateMetaTag("property", "og:title", ogTitle || siteTitle);
+    updateMetaTag("property", "og:description", ogDescription || siteDesc);
+    updateMetaTag("property", "og:url", siteUrl);
+    updateMetaTag("property", "og:image", ogImage || defaultOgImage);
+    updateMetaTag("property", "og:site_name", "CodesRoom");
+
+    // Update Twitter Cards social metas
+    updateMetaTag("name", "twitter:card", "summary_large_image");
+    updateMetaTag("name", "twitter:title", ogTitle || siteTitle);
+    updateMetaTag("name", "twitter:description", ogDescription || siteDesc);
+    updateMetaTag("name", "twitter:url", siteUrl);
+    updateMetaTag("name", "twitter:image", ogImage || defaultOgImage);
+  }, [
+    siteTitle,
+    siteDesc,
+    siteKeywords,
+    canonical,
+    siteUrl,
+    ogType,
+    ogTitle,
+    ogDescription,
+    ogImage,
+    defaultOgImage,
+  ]);
+
+  return null;
 }

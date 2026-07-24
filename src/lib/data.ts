@@ -45,33 +45,33 @@ export const LANG_COLORS: Record<string, string> = {
 
 export const FEATURES = [
   {
-    icon: Zap,
-    title: "Instant execution",
-    body: "Run Python, JS, Java, C++ and Go in seconds — no setup, no signup.",
+    icon: Code2,
+    title: "Web Pen",
+    body: "Build frontend prototypes with HTML, CSS, and JS. See your updates render live as you type.",
   },
   {
-    icon: Code2,
-    title: "Monaco editor",
-    body: "The same editor as VS Code. Syntax highlighting, IntelliSense, multi-cursor.",
+    icon: Zap,
+    title: "Multi-Language Playground",
+    body: "Compile and run code in 15+ languages including Python, JS, TS, Java, C++, Go, and Rust.",
   },
   {
     icon: Users,
-    title: "Realtime rooms",
-    body: "Share a link, pair-program, and watch edits stream live.",
-  },
-  {
-    icon: FileJson,
-    title: "JSON toolkit",
-    body: "Format, minify, validate, tree-view, and convert to YAML or XML.",
-  },
-  {
-    icon: Terminal,
-    title: "Terminal output",
-    body: "True dev console — color-coded stdout/stderr with execution time.",
+    title: "Collaborative Rooms",
+    body: "Create private or public rooms to pair-program in real-time and stream edits live.",
   },
   {
     icon: ShieldCheck,
-    title: "Sandboxed runtime",
-    body: "JS/TS execute in isolated iframes. Server code runs in containerized workers.",
+    title: "Team Workspaces",
+    body: "Organize your collaborative rooms, manage member roles, and share workspaces under Teams.",
+  },
+  {
+    icon: FileJson,
+    title: "JSON Toolkit",
+    body: "Format, minify, validate, view interactive tree-views, and convert JSON to YAML or XML.",
+  },
+  {
+    icon: Terminal,
+    title: "Monaco Editor",
+    body: "Enjoy the same powerful editing experience as VS Code, with IntelliSense, auto-formatting, and shortcuts.",
   },
 ];
