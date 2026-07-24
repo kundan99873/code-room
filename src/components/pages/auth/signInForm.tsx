@@ -20,7 +20,7 @@ export default function SignInForm({ onForgotPasswordClick }: SignInFormProps) {
     e.preventDefault();
     try {
       await login({ email, password });
-    } catch (err) {
+    } catch {
       // handled by mutation toast
     }
   };

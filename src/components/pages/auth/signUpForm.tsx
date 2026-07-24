@@ -22,7 +22,7 @@ export default function SignUpForm({ onSuccess }: SignUpFormProps) {
     try {
       await register({ name, email, password });
       onSuccess();
-    } catch (err) {
+    } catch {
       // handled by mutation toast
     }
   };

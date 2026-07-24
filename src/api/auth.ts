@@ -14,7 +14,15 @@ export interface User {
 }
 
 export const fetchCurrentUser = async (): Promise<User> => {
-  const res = await apiFetch("/api/auth/me");
+  let res = await apiFetch("/api/auth/me");
+
+  if (res.status === 401) {
+    const refreshRes = await apiFetch("/api/auth/refresh-token", { method: "POST" });
+    if (refreshRes.ok) {
+      res = await apiFetch("/api/auth/me");
+    }
+  }
+
   if (!res.ok) {
     throw new Error("Not authenticated");
   }
@@ -97,6 +105,17 @@ export const changePasswordRequest = async (credentials: any) => {
   const result = await res.json();
   if (!res.ok) {
     throw new Error(result.message || "Failed to change password");
+  }
+  return result;
+};
+
+export const refreshTokenRequest = async () => {
+  const res = await apiFetch("/api/auth/refresh-token", {
+    method: "POST",
+  });
+  const result = await res.json();
+  if (!res.ok) {
+    throw new Error(result.message || "Failed to refresh token");
   }
   return result;
 };

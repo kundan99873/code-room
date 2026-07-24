@@ -7,7 +7,7 @@ export const apiFetch = (input: RequestInfo | URL, init?: RequestInit): Promise<
 
   const options: RequestInit = {
     ...init,
-    credentials: init?.credentials || "include",
+    credentials: "include",
   };
 
   return fetch(url, options);

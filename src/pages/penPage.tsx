@@ -21,10 +21,10 @@ import SEO from "@/components/seo";
 const STORAGE_KEY = "pen.v1";
 
 const DEFAULT_HTML = `<div class="card">
-  <h1>Hello, <span>World</span></h1>
-  <p>Edit the HTML, CSS, and JS panels — preview updates live.</p>
-  <button id="btn">Click me</button>
-  <p id="out"></p>
+  <div class="glow"></div>
+  <h1 id="greeting">Hello!</h1>
+  <p>Welcome to CodesRoom Web Pen. Create and test your HTML/CSS/JS snippets live.</p>
+  <button id="action-btn">Change Gradient</button>
 </div>
 `;
 
@@ -34,44 +34,96 @@ body {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  font-family: 'Inter', system-ui, sans-serif;
-  background: radial-gradient(circle at 30% 20%, #6366f1, #0f172a 70%);
-  color: white;
+  background: #0f172a;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #f8fafc;
+  overflow: hidden;
+  transition: background 0.8s ease;
 }
 .card {
-  padding: 2.5rem 3rem;
-  background: rgba(255, 255, 255, 0.08);
+  position: relative;
+  padding: 3rem 2.5rem;
+  background: rgba(30, 41, 59, 0.4);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 1.25rem;
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.5rem;
+  max-width: 420px;
   text-align: center;
-  box-shadow: 0 25px 60px -20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
 }
-h1 { margin: 0 0 .5rem; font-weight: 800; letter-spacing: -0.02em; }
-h1 span { background: linear-gradient(90deg, #f472b6, #fbbf24); -webkit-background-clip: text; color: transparent; }
+.glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+  pointer-events: none;
+  transition: background 0.8s ease;
+}
+h1 {
+  font-size: 2.2rem;
+  margin: 0 0 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #a78bfa, #f43f5e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+p {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin: 0 0 2rem;
+}
 button {
-  margin-top: 1rem;
-  padding: .6rem 1.25rem;
-  border-radius: .6rem;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
   border: 0;
-  background: white;
-  color: #111;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
   font-weight: 600;
+  border-radius: 0.75rem;
   cursor: pointer;
-  transition: transform .15s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
-button:hover { transform: translateY(-2px); }
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+button:active {
+  transform: translateY(0);
+}
 `;
 
-const DEFAULT_JS = `const btn = document.getElementById('btn');
-const out = document.getElementById('out');
-let n = 0;
+const DEFAULT_JS = `const btn = document.getElementById('action-btn');
+const glow = document.querySelector('.glow');
+const greeting = document.getElementById('greeting');
+
+const gradients = [
+  { bg: '#0f172a', glow: 'rgba(99, 102, 241, 0.15)' },
+  { bg: '#090514', glow: 'rgba(236, 72, 153, 0.15)' },
+  { bg: '#020f12', glow: 'rgba(20, 184, 166, 0.15)' },
+  { bg: '#170c02', glow: 'rgba(249, 115, 22, 0.15)' }
+];
+
+const hours = new Date().getHours();
+if (hours < 12) greeting.textContent = 'Good Morning!';
+else if (hours < 18) greeting.textContent = 'Good Afternoon!';
+else greeting.textContent = 'Good Evening!';
+
+let currentIndex = 0;
+
 btn.addEventListener('click', () => {
-  n++;
-  out.textContent = 'Clicked ' + n + (n === 1 ? ' time' : ' times');
-  console.log('click', n);
+  currentIndex = (currentIndex + 1) % gradients.length;
+  const theme = gradients[currentIndex];
+  document.body.style.background = theme.bg;
+  glow.style.background = \`radial-gradient(circle, \${theme.glow} 0%, transparent 60%)\`;
+  console.log('Switched to background theme:', theme.bg);
 });
-console.log('Ready');
 `;
 
 type Tab = "html" | "css" | "js";

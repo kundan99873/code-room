@@ -132,7 +132,7 @@ function tryParseJson(text: string): any {
   if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
     try {
       return JSON.parse(trimmed);
-    } catch (e) {
+    } catch {
       return null;
     }
   }
@@ -181,7 +181,7 @@ export const OutputPanel = forwardRef<HTMLIFrameElement, Props>(function OutputP
           <Button
             size="sm"
             variant="ghost"
-            className="h-7 px-2.5 text-xs gap-1.5 rounded-sm bg-zinc-800 text-foreground font-semibold shadow-sm"
+            className="h-7 px-2.5 text-xs gap-1.5 rounded-sm bg-zinc-800 text-zinc-100 hover:text-white font-semibold shadow-sm"
           >
             <Terminal className="h-3.5 w-3.5" />
             {previewLabel}

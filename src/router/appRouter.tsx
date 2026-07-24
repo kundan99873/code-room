@@ -1,15 +1,9 @@
+/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { lazy, Suspense } from "react";
 import RootLayout from "@/layout/rootLayout";
-import AuthPage from "@/pages/authPage";
-import HomePage from "@/pages/homePage";
-import JsonPage from "@/pages/jsonPage";
-import PenPage from "@/pages/penPage";
-import PlaygroundPage from "@/pages/playgroundPage";
-import DashboardPage from "@/pages/dashboardPage";
-import RoomPage from "@/pages/roomPage";
-import ResetPasswordPage from "@/pages/resetPasswordPage";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-
 import { Skeleton } from "@/components/ui/skeleton";
 
 function FullPageSkeleton() {
@@ -46,6 +40,21 @@ function FullPageSkeleton() {
     </div>
   );
 }
+
+const Loadable = (Component: React.ComponentType<any>) => (props: any) => (
+  <Suspense fallback={<FullPageSkeleton />}>
+    <Component {...props} />
+  </Suspense>
+);
+
+const AuthPage = Loadable(lazy(() => import("@/pages/authPage")));
+const HomePage = Loadable(lazy(() => import("@/pages/homePage")));
+const JsonPage = Loadable(lazy(() => import("@/pages/jsonPage")));
+const PenPage = Loadable(lazy(() => import("@/pages/penPage")));
+const PlaygroundPage = Loadable(lazy(() => import("@/pages/playgroundPage")));
+const DashboardPage = Loadable(lazy(() => import("@/pages/dashboardPage")));
+const RoomPage = Loadable(lazy(() => import("@/pages/roomPage")));
+const ResetPasswordPage = Loadable(lazy(() => import("@/pages/resetPasswordPage")));
 
 // Protected Route Guard
 function ProtectedRoute() {

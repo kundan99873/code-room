@@ -271,7 +271,7 @@ export default function RoomPage() {
                 try {
                     await fetchCurrentUser();
                     socketInstance.connect();
-                } catch (refreshErr) {
+                } catch {
                     toast.error("Session expired. Please log in again.");
                     nav("/auth");
                 }
