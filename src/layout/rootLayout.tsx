@@ -57,12 +57,17 @@ function GlobalSocketListener() {
 export default function RootLayout() {
   const location = useLocation();
 
+  // Normalize the pathname by removing any trailing slash (except for just "/")
+  const path = location.pathname.endsWith("/") && location.pathname.length > 1
+    ? location.pathname.slice(0, -1)
+    : location.pathname;
+
   // Hide global navbar and footer on full-screen workspace pages
   const isWorkspace =
-    location.pathname.startsWith("/room/") ||
-    location.pathname === "/pen" ||
-    location.pathname === "/playground" ||
-    location.pathname === "/json";
+    path.startsWith("/room/") ||
+    path === "/web-pen" ||
+    path === "/online-compiler" ||
+    path === "/json-formatter";
 
   return (
     <AuthProvider>

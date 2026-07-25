@@ -9,4 +9,4 @@ Disallow: /dashboard
 Disallow: /reset-password
 
 # Link to sitemap
-Sitemap: https://codesroom.in/sitemap.xml
+Sitemap: https://www.codesroom.in/sitemap.xml

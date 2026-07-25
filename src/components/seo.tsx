@@ -27,10 +27,14 @@ export default function SEO({
     ? (title.includes("CodesRoom") ? title : `${title} | CodesRoom`) 
     : "CodesRoom - Real-Time Collaborative Coding & Playgrounds";
   const siteDesc = description || "Collaborate on code in real-time, run programs in 15+ languages, format/minify JSON, and pair program with CodesRoom.";
-  const siteKeywords = keywords || "collaborative coding, online compiler, live code editor, pair programming, codesroom, json formatter, codesroom.in";
+  const siteKeywords = keywords || "collaborative coding, online compiler, live code editor, pair programming, codesroom, json formatter, www.codesroom.in";
   
-  const siteUrl = ogUrl || (typeof window !== "undefined" ? window.location.origin + window.location.pathname : "https://codesroom.in");
-  const defaultOgImage = "https://codesroom.in/og-image.png";
+  let pathname = typeof window !== "undefined" ? window.location.pathname : "";
+  if (pathname && !pathname.endsWith("/")) {
+    pathname += "/";
+  }
+  const siteUrl = ogUrl || (typeof window !== "undefined" ? window.location.origin + pathname : "https://www.codesroom.in/");
+  const defaultOgImage = "https://www.codesroom.in/og-image.png";
 
   useEffect(() => {
     // Update document title

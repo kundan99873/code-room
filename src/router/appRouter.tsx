@@ -95,16 +95,29 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: "/playground",
+        path: "/online-compiler",
         element: <PlaygroundPage />,
       },
       {
-        path: "/json",
+        path: "/json-formatter",
         element: <JsonPage />,
       },
       {
-        path: "/pen",
+        path: "/web-pen",
         element: <PenPage />,
+      },
+      // Legacy redirects for SEO
+      {
+        path: "/playground",
+        element: <Navigate to="/online-compiler" replace />,
+      },
+      {
+        path: "/json",
+        element: <Navigate to="/json-formatter" replace />,
+      },
+      {
+        path: "/pen",
+        element: <Navigate to="/web-pen" replace />,
       },
       // Guest-only routes
       {
