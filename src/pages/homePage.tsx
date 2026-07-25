@@ -7,9 +7,9 @@ export default function HomePage() {
   return (
     <div>
       <SEO 
-        title="CodesRoom - Real-Time Collaborative Coding & Playgrounds"
-        description="Collaborate on code in real-time, run programs in 15+ languages, format/minify JSON, and pair program with CodesRoom."
-        keywords="collaborative coding, online compiler, live code editor, pair programming, codesroom, json formatter, codesroom.in"
+        title="CodesRoom | Real-Time Collaborative Code Editor & Online Compiler"
+        description="CodesRoom is a free online collaborative code editor and IDE. Run and execute code instantly in 15+ programming languages, format JSON, and pair program in real-time."
+        keywords="collaborative coding, online compiler, live code editor, pair programming, codesroom, json formatter, www.codesroom.in"
       />
       <HeroSection />
       <LanguageStrip />

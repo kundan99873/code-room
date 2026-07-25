@@ -205,8 +205,8 @@ export default function JsonPage() {
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-background">
       <SEO 
-        title="JSON Toolkit - Format, Minify & Convert JSON"
-        description="Verify, validate, format, minify, and parse JSON instantly with our online JSON toolkit. View your data in JSON Tree, XML, YAML or plaintext formats."
+        title="JSON Formatter & Validator - Format, Beautify & Convert JSON"
+        description="Best free online JSON formatter, validator, and editor. Beautify, validate, minify, and parse JSON instantly. Convert JSON to XML, YAML, and interactive tree view."
         keywords="json formatter, json parser, json validator, json to yaml, json to xml, beautify json, codesroom json"
       />
       <div className="border-b border-border bg-card">
