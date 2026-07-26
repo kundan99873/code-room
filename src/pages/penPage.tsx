@@ -1,165 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import Editor from "@monaco-editor/react";
 import { Button } from "@/components/ui/button";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useTheme } from "@/context/themeContext";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/useMobile";
 import { toast } from "react-hot-toast";
 import {
-  Play, RefreshCw, Download, Copy, Maximize2, Minimize2,
-  Monitor, Tablet, Smartphone, Eraser, FileCode2, Palette, Braces,
-  Eye, Code2, Settings2, Library, X, Plus, ArrowLeft,
+  Play, Download, Eraser, Code2, ArrowLeft,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import {
-  Popover, PopoverContent, PopoverTrigger,
-} from "@/components/ui/popover";
 import { Link } from "react-router-dom";
 import SEO from "@/components/seo";
-
-const STORAGE_KEY = "pen.v1";
-
-const DEFAULT_HTML = `<div class="card">
-  <div class="glow"></div>
-  <h1 id="greeting">Hello!</h1>
-  <p>Welcome to CodesRoom Web Pen. Create and test your HTML/CSS/JS snippets live.</p>
-  <button id="action-btn">Change Gradient</button>
-</div>
-`;
-
-const DEFAULT_CSS = `* { box-sizing: border-box; }
-body {
-  margin: 0;
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  background: #0f172a;
-  font-family: system-ui, -apple-system, sans-serif;
-  color: #f8fafc;
-  overflow: hidden;
-  transition: background 0.8s ease;
-}
-.card {
-  position: relative;
-  padding: 3rem 2.5rem;
-  background: rgba(30, 41, 59, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1.5rem;
-  max-width: 420px;
-  text-align: center;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-}
-.glow {
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
-  pointer-events: none;
-  transition: background 0.8s ease;
-}
-h1 {
-  font-size: 2.2rem;
-  margin: 0 0 1rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #a78bfa, #f43f5e);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-p {
-  font-size: 0.95rem;
-  color: #94a3b8;
-  line-height: 1.6;
-  margin: 0 0 2rem;
-}
-button {
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  color: white;
-  border: 0;
-  padding: 0.75rem 1.5rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 0.75rem;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-}
-button:active {
-  transform: translateY(0);
-}
-`;
-
-const DEFAULT_JS = `const btn = document.getElementById('action-btn');
-const glow = document.querySelector('.glow');
-const greeting = document.getElementById('greeting');
-
-const gradients = [
-  { bg: '#0f172a', glow: 'rgba(99, 102, 241, 0.15)' },
-  { bg: '#090514', glow: 'rgba(236, 72, 153, 0.15)' },
-  { bg: '#020f12', glow: 'rgba(20, 184, 166, 0.15)' },
-  { bg: '#170c02', glow: 'rgba(249, 115, 22, 0.15)' }
-];
-
-const hours = new Date().getHours();
-if (hours < 12) greeting.textContent = 'Good Morning!';
-else if (hours < 18) greeting.textContent = 'Good Afternoon!';
-else greeting.textContent = 'Good Evening!';
-
-let currentIndex = 0;
-
-btn.addEventListener('click', () => {
-  currentIndex = (currentIndex + 1) % gradients.length;
-  const theme = gradients[currentIndex];
-  document.body.style.background = theme.bg;
-  glow.style.background = \`radial-gradient(circle, \${theme.glow} 0%, transparent 60%)\`;
-  console.log('Switched to background theme:', theme.bg);
-});
-`;
-
-type Tab = "html" | "css" | "js";
-type Viewport = "desktop" | "tablet" | "mobile";
-
-function buildDoc(html: string, css: string, js: string, cssLibs: string[] = [], jsLibs: string[] = []) {
-  const bridge = `
-    (function(){
-      const send = (level, args) => {
-        try { parent.postMessage({ __pen: true, level, args: args.map(a => {
-          try {
-            if (a instanceof Error) return a.stack || a.message;
-            if (typeof a === 'function') return a.toString();
-            if (typeof a === 'object' && a !== null) return JSON.stringify(a, null, 2);
-            return String(a);
-          } catch(e) { return String(a); }
-        })}, '*'); } catch(e) {}
-      };
-      ['log','info','warn','error','debug'].forEach(k => {
-        const orig = console[k].bind(console);
-        console[k] = (...a) => { send(k, a); orig(...a); };
-      });
-      window.addEventListener('error', e => send('error', [e.message + ' (' + (e.filename||'') + ':' + e.lineno + ')']));
-      window.addEventListener('unhandledrejection', e => send('error', ['Unhandled: ' + (e.reason && e.reason.message || e.reason)]));
-    })();
-  `;
-  const cssLinks = cssLibs.filter(Boolean).map(u => `<link rel="stylesheet" href="${u}">`).join("");
-  const jsScripts = jsLibs.filter(Boolean).map(u => `<script src="${u}"><\/script>`).join("");
-  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${cssLinks}<style>${css}</style></head><body>${html}${jsScripts}<script>${bridge}</script><script>try{${js}}catch(e){console.error(e);}</script></body></html>`;
-}
-
-type ConsoleLine = { level: "log" | "info" | "warn" | "error" | "debug"; text: string };
-
-function isPreviewConsoleNoise(text: string) {
-  return /browserbase keeping connection alive|\[(v3-piercer|lovable|vite)\]/i.test(text);
-}
+import {
+  STORAGE_KEY,
+  DEFAULT_HTML,
+  DEFAULT_CSS,
+  DEFAULT_JS,
+  Tab,
+  Viewport,
+  ConsoleLine,
+  buildDoc,
+  isPreviewConsoleNoise,
+} from "@/components/pages/pen/penHelpers";
+import { LibrariesPopover } from "@/components/pages/pen/librariesPopover";
+import { PenEditor } from "@/components/pages/pen/penEditor";
+import { PenPreview } from "@/components/pages/pen/penPreview";
 
 function PenPage() {
   const { resolved } = useTheme();
@@ -285,12 +148,9 @@ function PenPage() {
   };
 
   const formatCurrent = () => {
-    // Light formatter: re-indent JSON, trim trailing whitespace on lines.
     try {
       if (tab === "html" || tab === "css") {
-        // basic: collapse spaces, ensure newline after ; or }
-        const v = current
-          .replace(/[ \t]+\n/g, "\n");
+        const v = current.replace(/[ \t]+\n/g, "\n");
         setCurrent(v);
         toast("Format: use Shift+Alt+F in the editor for full formatting.");
       } else {
@@ -305,163 +165,46 @@ function PenPage() {
     return viewport === "mobile" ? 390 : viewport === "tablet" ? 820 : "100%";
   }, [viewport]);
 
-  const tabMeta: Record<Tab, { label: string; ext: string; color: string; icon: React.ReactNode }> = {
-    html: { label: "HTML", ext: "html", color: "text-orange-500", icon: <FileCode2 className="h-3.5 w-3.5" /> },
-    css: { label: "CSS", ext: "css", color: "text-sky-500", icon: <Palette className="h-3.5 w-3.5" /> },
-    js: { label: "JS", ext: "js", color: "text-amber-400", icon: <Braces className="h-3.5 w-3.5" /> },
-  };
-
-  const editorBlock = (
-    <div className="h-full min-h-0 flex flex-col bg-card">
-      {/* Tabs */}
-      <div className="flex items-center justify-between border-b border-border bg-muted/30">
-        <div className="flex">
-          {(Object.keys(tabMeta) as Tab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex items-center gap-1.5 px-4 py-2 text-xs font-medium border-r border-border transition ${tab === t
-                  ? "bg-background text-foreground border-b-2 border-b-primary -mb-px"
-                  : "text-muted-foreground hover:text-foreground hover:bg-background/40"
-                }`}
-            >
-              <span className={tabMeta[t].color}>{tabMeta[t].icon}</span>
-              {tabMeta[t].label}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-1 pr-2">
-          <Button size="sm" variant="ghost" className="h-7 px-2" onClick={formatCurrent} title="Format (Shift+Alt+F in editor)">
-            <Settings2 className="h-3.5 w-3.5" />
-          </Button>
-          <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyCurrent} title="Copy">
-            <Copy className="h-3.5 w-3.5" />
-          </Button>
-          <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setFullEditor((f) => !f)} title="Fullscreen editor">
-            {fullEditor ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex-1 min-h-0">
-        {mounted ? (
-          <Editor
-            key={tab}
-            height="100%"
-            path={`main.${tabMeta[tab].ext}`}
-            language={tab === "js" ? "javascript" : tab}
-            defaultValue={current}
-            theme={resolved === "dark" ? "vs-dark" : "vs-light"}
-            onChange={(v) => setCurrent(v ?? "")}
-            onMount={handleEditorMount}
-            loading={<Skeleton className="h-full w-full rounded-none" />}
-            options={{
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-              fontSize: 14,
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              smoothScrolling: true,
-              padding: { top: 12 },
-              tabSize: 2,
-              lineNumbers: "on",
-              renderLineHighlight: "all",
-              cursorBlinking: "smooth",
-              wordWrap: "on",
-              automaticLayout: true,
-              formatOnPaste: true,
-              formatOnType: true,
-              autoClosingBrackets: "always",
-              autoClosingQuotes: "always",
-              autoSurround: "languageDefined",
-              suggestOnTriggerCharacters: true,
-              quickSuggestions: { other: true, comments: false, strings: true },
-            }}
-          />
-        ) : (
-          <Skeleton className="h-full w-full rounded-none" />
-        )}
-      </div>
-    </div>
+  const editorComp = (
+    <PenEditor
+      tab={tab}
+      setTab={setTab}
+      current={current}
+      setCurrent={setCurrent}
+      formatCurrent={formatCurrent}
+      copyCurrent={copyCurrent}
+      fullEditor={fullEditor}
+      setFullEditor={setFullEditor}
+      mounted={mounted}
+      resolved={resolved === "dark" ? "dark" : "light"}
+      handleEditorMount={handleEditorMount}
+    />
   );
 
-  const previewBlock = (
-    <div className="h-full min-h-0 flex flex-col bg-[#0d1117]">
-      <div className="flex items-center justify-between px-3 py-1.5 text-xs border-b border-border bg-[#0d1117] text-zinc-400">
-        <div className="flex items-center gap-2">
-          <Eye className="h-3.5 w-3.5 text-emerald-400" />
-          <span className="font-medium">Live Preview</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="flex items-center rounded border border-zinc-700 mr-1">
-            {([
-              { v: "desktop", icon: <Monitor className="h-3.5 w-3.5" />, label: "Desktop" },
-              { v: "tablet", icon: <Tablet className="h-3.5 w-3.5" />, label: "Tablet" },
-              { v: "mobile", icon: <Smartphone className="h-3.5 w-3.5" />, label: "Mobile" },
-            ] as const).map((o) => (
-              <button
-                key={o.v}
-                onClick={() => setViewport(o.v)}
-                title={o.label}
-                className={`p-1.5 ${viewport === o.v ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-zinc-100"}`}
-              >
-                {o.icon}
-              </button>
-            ))}
-          </div>
-          <Button size="sm" variant="ghost" className="h-7 px-2 text-zinc-400 hover:text-zinc-100 hover:bg-white/5" onClick={() => setShowConsole((s) => !s)} title="Toggle console">
-            <Code2 className="h-3.5 w-3.5" />
-          </Button>
-          <Button size="sm" variant="ghost" className="h-7 px-2 text-zinc-400 hover:text-zinc-100 hover:bg-white/5" onClick={buildAndRun} title="Reload (⌘/Ctrl+Enter)">
-            <RefreshCw className="h-3.5 w-3.5" />
-          </Button>
-          <Button size="sm" variant="ghost" className="h-7 px-2 text-zinc-400 hover:text-zinc-100 hover:bg-white/5" onClick={() => setFullPreview((f) => !f)} title="Fullscreen preview">
-            {fullPreview ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex-1 min-h-0 flex items-stretch justify-center overflow-auto p-2">
-        <iframe
-          ref={iframeRef}
-          title="preview"
-          className="bg-white rounded-md shadow-lg border border-zinc-800 transition-all"
-          style={{ width: viewportWidth as any, maxWidth: "100%", height: "100%" }}
-          sandbox="allow-scripts allow-modals allow-forms allow-popups"
-          srcDoc={doc || buildDoc(html, css, js, cssLibs, jsLibs)}
-        />
-      </div>
-
-      {showConsole && (
-        <div className="border-t border-zinc-800 max-h-48 overflow-auto bg-[#0a0e14] text-zinc-100 font-mono text-[12px] leading-relaxed">
-          <div className="sticky top-0 flex items-center justify-between px-3 py-1 bg-[#0a0e14] border-b border-zinc-800 text-zinc-500 text-[11px] uppercase tracking-wide">
-            <span>Console</span>
-            <button onClick={() => setLines([])} className="hover:text-zinc-200" title="Clear console">
-              <Eraser className="h-3 w-3" />
-            </button>
-          </div>
-          {lines.length === 0 ? (
-            <div className="px-3 py-2 text-zinc-600 italic">No console output yet.</div>
-          ) : (
-            <div className="px-3 py-2 space-y-0.5">
-              {lines.map((l, i) => (
-                <pre key={i} className={`whitespace-pre-wrap ${l.level === "error" ? "text-rose-400" :
-                    l.level === "warn" ? "text-amber-300" :
-                      l.level === "info" ? "text-sky-300" :
-                        l.level === "debug" ? "text-zinc-400" :
-                          "text-zinc-100"
-                  }`}>
-                  <span className="text-zinc-600 select-none mr-2">›</span>{l.text}
-                </pre>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+  const previewComp = (
+    <PenPreview
+      iframeRef={iframeRef}
+      doc={doc}
+      html={html}
+      css={css}
+      js={js}
+      cssLibs={cssLibs}
+      jsLibs={jsLibs}
+      viewport={viewport}
+      setViewport={setViewport}
+      viewportWidth={viewportWidth}
+      showConsole={showConsole}
+      setShowConsole={setShowConsole}
+      lines={lines}
+      setLines={setLines}
+      buildAndRun={buildAndRun}
+      fullPreview={fullPreview}
+      setFullPreview={setFullPreview}
+    />
   );
 
-  if (fullPreview) return <div className="fixed inset-0 z-50">{previewBlock}</div>;
-  if (fullEditor) return <div className="fixed inset-0 z-50">{editorBlock}</div>;
+  if (fullPreview) return <div className="fixed inset-0 z-50">{previewComp}</div>;
+  if (fullEditor) return <div className="fixed inset-0 z-50">{editorComp}</div>;
 
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-background">
@@ -519,10 +262,10 @@ function PenPage() {
         {isMobile ? (
           <div className="flex flex-col gap-3 h-full pb-6">
             <div className="h-[400px] border border-border rounded-lg overflow-hidden bg-card shrink-0">
-              {editorBlock}
+              {editorComp}
             </div>
             <div className="h-[400px] border border-border rounded-lg overflow-hidden bg-card shrink-0">
-              {previewBlock}
+              {previewComp}
             </div>
           </div>
         ) : (
@@ -530,91 +273,14 @@ function PenPage() {
             direction="horizontal"
             className="h-full w-full overflow-hidden rounded-lg border border-border bg-card shadow-sm"
           >
-            <ResizablePanel defaultSize={50} minSize={25}>{editorBlock}</ResizablePanel>
+            <ResizablePanel defaultSize={50} minSize={25}>{editorComp}</ResizablePanel>
             <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={50} minSize={25}>{previewBlock}</ResizablePanel>
+            <ResizablePanel defaultSize={50} minSize={25}>{previewComp}</ResizablePanel>
           </ResizablePanelGroup>
         )}
       </div>
     </div>
   );
 }
-
-function LibrariesPopover({
-  cssLibs, jsLibs, setCssLibs, setJsLibs,
-}: {
-  cssLibs: string[]; jsLibs: string[];
-  setCssLibs: (v: string[]) => void; setJsLibs: (v: string[]) => void;
-}) {
-  const [cssDraft, setCssDraft] = useState("");
-  const [jsDraft, setJsDraft] = useState("");
-  const addCss = () => { const v = cssDraft.trim(); if (!v) return; setCssLibs([...cssLibs, v]); setCssDraft(""); };
-  const addJs = () => { const v = jsDraft.trim(); if (!v) return; setJsLibs([...jsLibs, v]); setJsDraft(""); };
-  const total = cssLibs.length + jsLibs.length;
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button size="sm" variant="outline" className="gap-1.5 h-9" title="Libraries">
-          <Library className="h-4 w-4" />
-          <span className="hidden sm:inline">Libraries</span>
-          {total > 0 && (
-            <span className="ml-1 rounded bg-primary/15 text-primary px-1.5 text-[10px] font-semibold">{total}</span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-96" align="end">
-        <div className="space-y-4">
-          <div>
-            <div className="text-xs font-semibold mb-1.5 text-muted-foreground uppercase tracking-wide">CSS CDN</div>
-            <div className="flex gap-1.5">
-              <Input
-                placeholder="https://cdn.jsdelivr.net/.../bootstrap.min.css"
-                value={cssDraft}
-                onChange={(e) => setCssDraft(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCss())}
-                className="h-8 text-xs"
-              />
-              <Button size="sm" className="h-8 px-2" onClick={addCss}><Plus className="h-3.5 w-3.5" /></Button>
-            </div>
-            <ul className="mt-2 space-y-1">
-              {cssLibs.map((u, i) => (
-                <li key={i} className="flex items-center gap-1.5 text-xs bg-muted/40 rounded px-2 py-1">
-                  <span className="truncate flex-1 font-mono">{u}</span>
-                  <button onClick={() => setCssLibs(cssLibs.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-foreground">
-                    <X className="h-3 w-3" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <div className="text-xs font-semibold mb-1.5 text-muted-foreground uppercase tracking-wide">JS CDN</div>
-            <div className="flex gap-1.5">
-              <Input
-                placeholder="https://cdn.jsdelivr.net/npm/jquery"
-                value={jsDraft}
-                onChange={(e) => setJsDraft(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addJs())}
-                className="h-8 text-xs"
-              />
-              <Button size="sm" className="h-8 px-2" onClick={addJs}><Plus className="h-3.5 w-3.5" /></Button>
-            </div>
-            <ul className="mt-2 space-y-1">
-              {jsLibs.map((u, i) => (
-                <li key={i} className="flex items-center gap-1.5 text-xs bg-muted/40 rounded px-2 py-1">
-                  <span className="truncate flex-1 font-mono">{u}</span>
-                  <button onClick={() => setJsLibs(jsLibs.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-foreground">
-                    <X className="h-3 w-3" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
 
 export default PenPage;
