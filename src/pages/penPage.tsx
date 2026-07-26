@@ -14,9 +14,9 @@ import {
   DEFAULT_HTML,
   DEFAULT_CSS,
   DEFAULT_JS,
-  Tab,
-  Viewport,
-  ConsoleLine,
+  type Tab,
+  type Viewport,
+  type ConsoleLine,
   buildDoc,
   isPreviewConsoleNoise,
 } from "@/components/pages/pen/penHelpers";

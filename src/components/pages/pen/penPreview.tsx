@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   Monitor, Tablet, Smartphone, Code2, RefreshCw, Maximize2, Minimize2, Eye, Eraser
 } from "lucide-react";
-import { Viewport, ConsoleLine, buildDoc } from "./penHelpers";
+import { type Viewport, type ConsoleLine, buildDoc } from "./penHelpers";
 
 interface PenPreviewProps {
   iframeRef: React.RefObject<HTMLIFrameElement | null>;

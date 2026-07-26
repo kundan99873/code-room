@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import {
   SAMPLE,
-  Status,
+  type Status,
   validate,
   toYaml,
   toXml,

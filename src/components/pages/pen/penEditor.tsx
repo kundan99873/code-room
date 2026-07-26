@@ -2,7 +2,7 @@ import Editor from "@monaco-editor/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Copy, Settings2, Maximize2, Minimize2, FileCode2, Palette, Braces } from "lucide-react";
-import { Tab } from "./penHelpers";
+import type { Tab } from "./penHelpers";
 
 interface PenEditorProps {
   tab: Tab;
