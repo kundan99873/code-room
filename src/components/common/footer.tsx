@@ -16,10 +16,10 @@ export default function Footer() {
           </span>
         </div>
         <nav className="flex items-center gap-5 text-sm text-muted-foreground">
-          <Link to="/online-compiler/" className="hover:text-foreground">
+          <Link to="/online-compiler" className="hover:text-foreground">
             Playground
           </Link>
-          <Link to="/json-formatter/" className="hover:text-foreground">
+          <Link to="/json-formatter" className="hover:text-foreground">
             JSON Tools
           </Link>
           {user ? (

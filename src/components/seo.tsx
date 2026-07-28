@@ -32,8 +32,8 @@ export default function SEO({
   const siteDesc = description || "Collaborate on code in real-time, run programs in 15+ languages, format/minify JSON, and pair program with CodesRoom.";
   
   let pathname = typeof window !== "undefined" ? window.location.pathname : "";
-  if (pathname && !pathname.endsWith("/")) {
-    pathname += "/";
+  if (pathname && pathname.endsWith("/") && pathname.length > 1) {
+    pathname = pathname.slice(0, -1);
   }
   const siteUrl = ogUrl || (typeof window !== "undefined" ? window.location.origin + pathname : "https://www.codesroom.in/");
   const defaultOgImage = "https://www.codesroom.in/og-image.png";
