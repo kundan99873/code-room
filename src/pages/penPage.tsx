@@ -209,7 +209,7 @@ function PenPage() {
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-background">
       <SEO 
-        title="Online HTML, CSS & JS Editor with Live Preview"
+        title="CodesRoom | Online Front-End Editor"
         description="Free online HTML, CSS, and JavaScript editor with instant live preview. Code, test, and prototype front-end designs side-by-side in your browser."
         keywords="codepen alternative, online html editor, live html preview, html css js compiler, front-end editor, codesroom pen"
       />

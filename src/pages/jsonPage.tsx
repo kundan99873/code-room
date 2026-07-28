@@ -98,7 +98,7 @@ export default function JsonPage() {
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-background">
       <SEO 
-        title="JSON Formatter & Validator - Format, Beautify & Convert JSON"
+        title="JSON Formatter & Validator | CodesRoom"
         description="Best free online JSON formatter, validator, and editor. Beautify, validate, minify, and parse JSON instantly. Convert JSON to XML, YAML, and interactive tree view."
         keywords="json formatter, json parser, json validator, json to yaml, json to xml, beautify json, codesroom json"
       />

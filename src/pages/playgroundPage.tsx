@@ -17,7 +17,7 @@ export default function PlaygroundPage() {
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-background">
       <SEO 
-        title="Online Compiler & Code Editor (Run Code in 15+ Langs)"
+        title="Online Compiler & Code Editor | CodesRoom"
         description="Free online code compiler and IDE playground. Write, run, and execute code instantly in your browser in Python, JavaScript, C++, Java, Go, Rust, and 15+ languages."
         keywords="online IDE, online code runner, online compiler, python online editor, javascript playground, codesroom playground"
       />

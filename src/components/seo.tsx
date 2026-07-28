@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 interface SEOProps {
   title?: string;
   description?: string;
@@ -10,6 +8,8 @@ interface SEOProps {
   ogImage?: string;
   ogUrl?: string;
   ogType?: "website" | "article";
+  robots?: string;
+  schemaType?: "website" | "software" | "none";
 }
 
 export default function SEO({
@@ -22,12 +22,14 @@ export default function SEO({
   ogImage,
   ogUrl,
   ogType = "website",
+  robots = "index, follow",
+  schemaType = "website",
 }: SEOProps) {
   const siteTitle = title 
     ? (title.includes("CodesRoom") ? title : `${title} | CodesRoom`) 
     : "CodesRoom - Real-Time Collaborative Coding & Playgrounds";
+  
   const siteDesc = description || "Collaborate on code in real-time, run programs in 15+ languages, format/minify JSON, and pair program with CodesRoom.";
-  const siteKeywords = keywords || "collaborative coding, online compiler, live code editor, pair programming, codesroom, json formatter, www.codesroom.in";
   
   let pathname = typeof window !== "undefined" ? window.location.pathname : "";
   if (pathname && !pathname.endsWith("/")) {
@@ -36,61 +38,66 @@ export default function SEO({
   const siteUrl = ogUrl || (typeof window !== "undefined" ? window.location.origin + pathname : "https://www.codesroom.in/");
   const defaultOgImage = "https://www.codesroom.in/og-image.png";
 
-  useEffect(() => {
-    // Update document title
-    document.title = siteTitle;
+  const resolvedOgImage = ogImage || defaultOgImage;
+  const resolvedCanonical = canonical || siteUrl;
 
-    // Helper function to update or create meta tags in head
-    const updateMetaTag = (attrName: "name" | "property", attrValue: string, content: string) => {
-      let meta = document.querySelector(`meta[${attrName}="${attrValue}"]`);
-      if (!meta) {
-        meta = document.createElement("meta");
-        meta.setAttribute(attrName, attrValue);
-        document.head.appendChild(meta);
-      }
-      meta.setAttribute("content", content);
-    };
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "CodesRoom",
+    "url": "https://www.codesroom.in/",
+    "description": siteDesc,
+  };
 
-    // Update standard search engine metas
-    updateMetaTag("name", "description", siteDesc);
-    updateMetaTag("name", "keywords", siteKeywords);
-    updateMetaTag("name", "robots", "index, follow");
-
-    // Update Canonical URL link tag
-    let link = document.querySelector('link[rel="canonical"]');
-    if (!link) {
-      link = document.createElement("link");
-      link.setAttribute("rel", "canonical");
-      document.head.appendChild(link);
+  const softwareSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "CodesRoom",
+    "url": siteUrl,
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "All",
+    "description": siteDesc,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
     }
-    link.setAttribute("href", canonical || siteUrl);
+  };
 
-    // Update Open Graph (Facebook/LinkedIn) social metas
-    updateMetaTag("property", "og:type", ogType);
-    updateMetaTag("property", "og:title", ogTitle || siteTitle);
-    updateMetaTag("property", "og:description", ogDescription || siteDesc);
-    updateMetaTag("property", "og:url", siteUrl);
-    updateMetaTag("property", "og:image", ogImage || defaultOgImage);
-    updateMetaTag("property", "og:site_name", "CodesRoom");
+  const activeSchema = schemaType === "software" ? softwareSchema : schemaType === "website" ? websiteSchema : null;
 
-    // Update Twitter Cards social metas
-    updateMetaTag("name", "twitter:card", "summary_large_image");
-    updateMetaTag("name", "twitter:title", ogTitle || siteTitle);
-    updateMetaTag("name", "twitter:description", ogDescription || siteDesc);
-    updateMetaTag("name", "twitter:url", siteUrl);
-    updateMetaTag("name", "twitter:image", ogImage || defaultOgImage);
-  }, [
-    siteTitle,
-    siteDesc,
-    siteKeywords,
-    canonical,
-    siteUrl,
-    ogType,
-    ogTitle,
-    ogDescription,
-    ogImage,
-    defaultOgImage,
-  ]);
+  return (
+    <>
+      {/* React 19 automatically hoists title, meta, and link tags to the document <head> */}
+      <title>{siteTitle}</title>
+      <meta name="description" content={siteDesc} />
+      {keywords && <meta name="keywords" content={keywords} />}
+      <meta name="robots" content={robots} />
+      <link rel="canonical" href={resolvedCanonical} />
+      <link rel="alternate" hrefLang="x-default" href={resolvedCanonical} />
+      <link rel="alternate" hrefLang="en" href={resolvedCanonical} />
 
-  return null;
+      {/* Open Graph / Facebook */}
+      <meta property="og:type" content={ogType} />
+      <meta property="og:title" content={ogTitle || siteTitle} />
+      <meta property="og:description" content={ogDescription || siteDesc} />
+      <meta property="og:url" content={siteUrl} />
+      <meta property="og:image" content={resolvedOgImage} />
+      <meta property="og:site_name" content="CodesRoom" />
+
+      {/* Twitter Cards */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={ogTitle || siteTitle} />
+      <meta name="twitter:description" content={ogDescription || siteDesc} />
+      <meta name="twitter:url" content={siteUrl} />
+      <meta name="twitter:image" content={resolvedOgImage} />
+
+      {/* JSON-LD Schema (rendered inline, fully indexed by Google anywhere in body/head) */}
+      {activeSchema && (
+        <script type="application/ld+json">
+          {JSON.stringify(activeSchema)}
+        </script>
+      )}
+    </>
+  );
 }
