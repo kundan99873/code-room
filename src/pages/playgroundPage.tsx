@@ -6,8 +6,18 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 import SEO from "@/components/seo";
 
 export default function PlaygroundPage() {
-  const [language, setLanguage] = useState("javascript");
-  const [code, setCode] = useState(starter("javascript"));
+  const [language, setLanguage] = useState(() => {
+    return sessionStorage.getItem("codesroom_preload_lang") || "javascript";
+  });
+  const [code, setCode] = useState(() => {
+    const preloaded = sessionStorage.getItem("codesroom_preload_code");
+    if (preloaded) {
+      sessionStorage.removeItem("codesroom_preload_code");
+      sessionStorage.removeItem("codesroom_preload_lang");
+      return preloaded;
+    }
+    return starter("javascript");
+  });
 
   const onLang = (l: string) => {
     setLanguage(l);

@@ -15,6 +15,8 @@ import { buildJsSandbox, isRunnerNoise, transformTypeScript } from "@/lib/utils"
 import { EditorPanel } from "./editorPanel";
 import { OutputPanel } from "./outputPanel";
 import { RunnerToolbar } from "./runnerToolbar";
+import { CodeToImageModal } from "./CodeToImageModal";
+import { ShareSnippetModal } from "./ShareSnippetModal";
 
 type Props = {
   value: string;
@@ -42,6 +44,8 @@ export function CodeRunner({
   const [endpoint, setEndpointState] = useState<string>(() => getPistonEndpoint());
   const [fullEditor, setFullEditor] = useState(false);
   const [fullOutput, setFullOutput] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const codeRef = useRef(value);
@@ -283,6 +287,8 @@ export function CodeRunner({
       onFormat={format}
       onCopy={copy}
       onDownload={download}
+      onShareSnippet={() => setShowShareModal(true)}
+      onExportImage={() => setShowImageModal(true)}
       fileName={activeFileName}
       readOnly={readOnly}
     />
@@ -349,6 +355,24 @@ export function CodeRunner({
           </ResizablePanelGroup>
         )}
       </div>
+
+      {/* Code to Image Exporter Modal */}
+      <CodeToImageModal
+        isOpen={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        code={codeRef.current}
+        language={language}
+        filename={activeFileName || `main.${lang?.ext ?? "js"}`}
+      />
+
+      {/* Share Snippet Modal */}
+      <ShareSnippetModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        code={codeRef.current}
+        language={language}
+        defaultTitle={activeFileName || `${language} snippet`}
+      />
     </div>
   );
 }

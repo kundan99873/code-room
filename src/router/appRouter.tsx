@@ -55,6 +55,8 @@ const PlaygroundPage = Loadable(lazy(() => import("@/pages/playgroundPage")));
 const DashboardPage = Loadable(lazy(() => import("@/pages/dashboardPage")));
 const RoomPage = Loadable(lazy(() => import("@/pages/roomPage")));
 const ResetPasswordPage = Loadable(lazy(() => import("@/pages/resetPasswordPage")));
+const SnippetPage = Loadable(lazy(() => import("@/pages/snippetPage")));
+const SnippetEmbedPage = Loadable(lazy(() => import("@/pages/snippetEmbedPage")));
 
 // Protected Route Guard
 function ProtectedRoute() {
@@ -106,6 +108,15 @@ const router = createBrowserRouter([
         path: "/web-pen",
         element: <PenPage />,
       },
+      // Public Shareable Code Snippet Routes
+      {
+        path: "/s/:id",
+        element: <SnippetPage />,
+      },
+      {
+        path: "/snippet/:id",
+        element: <SnippetPage />,
+      },
       // Legacy redirects for SEO
       {
         path: "/playground",
@@ -153,6 +164,11 @@ const router = createBrowserRouter([
         element: <Navigate to="/" replace />,
       },
     ],
+  },
+  // Standalone embed route for blogs and documentation (no root layout shell)
+  {
+    path: "/embed/s/:id",
+    element: <SnippetEmbedPage />,
   },
 ]);
 
