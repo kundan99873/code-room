@@ -1,17 +1,6 @@
 {
   "redirects": [
     {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.codesroom.in"
-        }
-      ],
-      "destination": "https://codesroom.in/:path*",
-      "permanent": true
-    },
-    {
       "source": "/playground",
       "destination": "/online-compiler",
       "permanent": true

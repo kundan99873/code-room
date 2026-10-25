@@ -62,7 +62,7 @@ function prerender() {
 
   for (const route of ROUTES_SEO) {
     const { path: routePath, title, description, keywords } = route;
-    const fullUrl = `https://www.codesroom.in${routePath === '/' ? '' : routePath}`;
+    const fullUrl = `https://codesroom.in${routePath === '/' ? '' : routePath}`;
 
     let updatedHtml = originalHtml;
 
