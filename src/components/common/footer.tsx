@@ -15,11 +15,14 @@ export default function Footer() {
             © {new Date().getFullYear()} Coderoom
           </span>
         </div>
-        <nav className="flex items-center gap-5 text-sm text-muted-foreground">
-          <Link to="/online-compiler/" className="hover:text-foreground">
-            Playground
+        <nav className="flex flex-wrap items-center gap-5 text-sm text-muted-foreground" aria-label="Footer Navigation">
+          <Link to="/online-compiler" className="hover:text-foreground">
+            Online Compiler
           </Link>
-          <Link to="/json-formatter/" className="hover:text-foreground">
+          <Link to="/web-pen" className="hover:text-foreground">
+            Web Pen
+          </Link>
+          <Link to="/json-formatter" className="hover:text-foreground">
             JSON Tools
           </Link>
           {user ? (

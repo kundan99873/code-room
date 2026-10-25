@@ -76,10 +76,10 @@ export function Navbar() {
             </div>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-0.5">
-            <CustomNavLink to="/web-pen/">Web Pen</CustomNavLink>
-            <CustomNavLink to="/online-compiler/">Playground</CustomNavLink>
-            <CustomNavLink to="/json-formatter/">JSON Tools</CustomNavLink>
+          <nav className="hidden md:flex items-center gap-0.5" aria-label="Main Navigation">
+            <CustomNavLink to="/online-compiler">Online Compiler</CustomNavLink>
+            <CustomNavLink to="/web-pen">Web Pen</CustomNavLink>
+            <CustomNavLink to="/json-formatter">JSON Tools</CustomNavLink>
             {user && <CustomNavLink to="/dashboard">Rooms</CustomNavLink>}
           </nav>
 
@@ -238,21 +238,21 @@ export function Navbar() {
               )}
 
               <Link
-                to="/web-pen/"
+                to="/online-compiler"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex w-full items-center px-4 py-2 text-sm font-medium rounded-lg hover:bg-accent transition"
+              >
+                Online Compiler
+              </Link>
+              <Link
+                to="/web-pen"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex w-full items-center px-4 py-2 text-sm font-medium rounded-lg hover:bg-accent transition"
               >
                 Web Pen
               </Link>
               <Link
-                to="/online-compiler/"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex w-full items-center px-4 py-2 text-sm font-medium rounded-lg hover:bg-accent transition"
-              >
-                Playground
-              </Link>
-              <Link
-                to="/json-formatter/"
+                to="/json-formatter"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex w-full items-center px-4 py-2 text-sm font-medium rounded-lg hover:bg-accent transition"
               >

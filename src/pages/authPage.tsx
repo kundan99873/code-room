@@ -20,9 +20,14 @@ export default function AuthPage() {
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-background px-4 py-10 overflow-hidden">
       <SEO
-        title="Login & Sign Up - Access Collaborative Workspace"
+        title="Sign In & Sign Up — Access Collaborative Workspace | CodesRoom"
         description="Log in or create a CodesRoom account to save your code playgrounds, manage real-time collaborative coding rooms, and pair program with your team."
-        keywords="codesroom login, codesroom sign up, codesroom authentication"
+        keywords="codesroom login, codesroom sign up, codesroom authentication, pair programming login"
+        canonical="https://codesroom.in/auth"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Sign In", url: "/auth" },
+        ]}
       />
       {/* Ambient background */}
       <div aria-hidden className="pointer-events-none absolute inset-0">

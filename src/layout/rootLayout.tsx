@@ -6,6 +6,7 @@ import { Toaster, toast } from "react-hot-toast";
 import { useEffect } from "react";
 import { io } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 
 function GlobalSocketListener() {
   const { user } = useAuth();
@@ -71,6 +72,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
+      <GoogleAnalytics />
       <GlobalSocketListener />
       {!isWorkspace && <Navbar />}
       <Outlet />

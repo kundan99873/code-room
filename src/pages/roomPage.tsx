@@ -11,6 +11,7 @@ import { RoomHeader } from "@/components/pages/room/roomHeader";
 import { RoomNotFound, PrivateRoomRequest } from "@/components/pages/room/roomStates";
 import { X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import SEO from "@/components/seo";
 
 function RoomPageSkeleton() {
     return (
@@ -713,6 +714,7 @@ export default function RoomPage() {
 
     return (
         <div className="h-screen overflow-hidden flex flex-col bg-background">
+            <SEO title={`${room.name} — Collaborative Room | CodesRoom`} noindex={true} />
             <RoomHeader
                 room={room}
                 filesCount={files.length}

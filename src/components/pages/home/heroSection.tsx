@@ -1,4 +1,4 @@
-import { ArrowRight, FileJson, Play, Sparkles } from "lucide-react";
+import { ArrowRight, Code2, FileJson, Play, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import FloatingCode from "./floatingCode";
@@ -89,14 +89,20 @@ room.on("edit", (op) => {
             className="mt-9 flex flex-wrap items-center justify-center gap-3"
           >
             <Link
-              to="/online-compiler/"
+              to="/online-compiler"
               className="group inline-flex items-center gap-2 rounded-lg bg-primary text-primary-foreground font-medium px-6 py-3 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition"
             >
-              <Play className="h-4 w-4" /> Open Playground
+              <Play className="h-4 w-4" /> Online Compiler
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
             </Link>
             <Link
-              to="/json-formatter/"
+              to="/web-pen"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/70 backdrop-blur px-6 py-3 font-medium hover:bg-accent transition"
+            >
+              <Code2 className="h-4 w-4 text-primary" /> Web Pen
+            </Link>
+            <Link
+              to="/json-formatter"
               className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/70 backdrop-blur px-6 py-3 font-medium hover:bg-accent transition"
             >
               <FileJson className="h-4 w-4 text-primary" /> JSON Tools

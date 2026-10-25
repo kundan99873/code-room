@@ -208,26 +208,52 @@ function PenPage() {
 
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-background">
-      <SEO 
-        title="Online HTML, CSS & JS Editor with Live Preview"
-        description="Free online HTML, CSS, and JavaScript editor with instant live preview. Code, test, and prototype front-end designs side-by-side in your browser."
-        keywords="codepen alternative, online html editor, live html preview, html css js compiler, front-end editor, codesroom pen"
+      <SEO
+        title="Web Pen — Online HTML, CSS & JavaScript Live Editor | CodesRoom"
+        description="Interactive online HTML, CSS, and JavaScript editor with real-time live preview. Prototype, experiment, and test frontend code side-by-side with zero setup."
+        keywords="html editor online, live html preview, codepen alternative, html css js playground, web pen, front-end editor, test html online, codesroom"
+        canonical="https://codesroom.in/web-pen"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Web Pen", url: "/web-pen" },
+        ]}
+        structuredData={{
+          "@type": "SoftwareApplication",
+          "name": "CodesRoom Web Pen",
+          "url": "https://codesroom.in/web-pen",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "All",
+          "description": "Interactive HTML, CSS, and JavaScript frontend editor with live in-browser preview.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        }}
       />
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-border bg-card">
         <div className="flex items-center gap-3">
-          <Link to="/" className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition hover:text-foreground hover:border-primary/40" title="Back to Home">
+          <Link
+            to="/"
+            className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition hover:text-foreground hover:border-primary/40"
+            title="Back to Home"
+            aria-label="Back to Home"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <h1 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
-              <Code2 className="h-5 w-5 text-primary shrink-0" />
-              <span>
-                <span className="hidden sm:inline">Web </span>Playground
-              </span>
+            <h1 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+              <Code2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+              <span>Web Pen — Live HTML/CSS/JS</span>
             </h1>
           </div>
         </div>
+        <nav className="hidden md:flex items-center gap-3 text-xs text-muted-foreground mr-2" aria-label="Tool Navigation">
+          <Link to="/online-compiler" className="hover:text-foreground transition">Online Compiler</Link>
+          <span className="text-border">|</span>
+          <Link to="/json-formatter" className="hover:text-foreground transition">JSON Tools</Link>
+        </nav>
         <div className="flex items-center gap-2">
           <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none" title="Auto-run">
             <input

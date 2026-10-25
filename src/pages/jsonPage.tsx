@@ -97,26 +97,52 @@ export default function JsonPage() {
 
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-background">
-      <SEO 
-        title="JSON Formatter & Validator - Format, Beautify & Convert JSON"
-        description="Best free online JSON formatter, validator, and editor. Beautify, validate, minify, and parse JSON instantly. Convert JSON to XML, YAML, and interactive tree view."
-        keywords="json formatter, json parser, json validator, json to yaml, json to xml, beautify json, codesroom json"
+      <SEO
+        title="JSON Formatter, Validator & Beautifier Online | CodesRoom"
+        description="Free online JSON formatter, validator, editor, and converter. Beautify, minify, validate syntax, and convert JSON to YAML or XML with instant tree view."
+        keywords="json formatter, json validator, beautify json, json parser, json to yaml, json to xml, minify json, format json online, codesroom"
+        canonical="https://codesroom.in/json-formatter"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "JSON Formatter", url: "/json-formatter" },
+        ]}
+        structuredData={{
+          "@type": "SoftwareApplication",
+          "name": "CodesRoom JSON Formatter & Validator",
+          "url": "https://codesroom.in/json-formatter",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "All",
+          "description": "Beautify, validate, minify, and convert JSON data to XML and YAML online.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        }}
       />
       <div className="border-b border-border bg-card">
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
-            <Link to="/" className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition hover:text-foreground hover:border-primary/40" title="Back to Home">
+            <Link
+              to="/"
+              className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition hover:text-foreground hover:border-primary/40"
+              title="Back to Home"
+              aria-label="Back to Home"
+            >
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <div>
-              <h1 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
-                <FileJson className="h-5 w-5 text-primary shrink-0" />
-                <span>
-                  <span className="hidden sm:inline">JSON </span>Toolkit
-                </span>
+              <h1 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                <FileJson className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+                <span>JSON Formatter & Toolkit</span>
               </h1>
             </div>
           </div>
+          <nav className="hidden md:flex items-center gap-3 text-xs text-muted-foreground mr-2" aria-label="Tool Navigation">
+            <Link to="/online-compiler" className="hover:text-foreground transition">Online Compiler</Link>
+            <span className="text-border">|</span>
+            <Link to="/web-pen" className="hover:text-foreground transition">Web Pen</Link>
+          </nav>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"

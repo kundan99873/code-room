@@ -29,6 +29,7 @@ import {
 import type { Team } from "@/api/teams";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import SEO from "@/components/seo";
 
 type Room = {
     id: string;
@@ -293,6 +294,7 @@ export default function Dashboard() {
 
     return (
         <div className="relative min-h-screen overflow-hidden">
+            <SEO title="Dashboard — Workspace" noindex={true} />
             {/* Custom animations for premium UI */}
 
             {/* Ambient background */}

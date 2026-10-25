@@ -5,57 +5,139 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/x-icon" href="/icon.ico" />
   <link rel="shortcut icon" href="/icon.ico" />
-  <link rel="apple-touch-icon" href="/logo.ico" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <link rel="manifest" href="/site.webmanifest" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="canonical" href="https://www.codesroom.in/" />
+  <meta name="theme-color" content="#0a0a0c" />
+  <link rel="canonical" href="https://codesroom.in/" />
   <meta name="robots" content="index, follow" />
 
   <!-- Primary Metadata -->
-  <title>CodesRoom - Real-Time Collaborative Coding, Playgrounds & JSON Tools</title>
+  <title>CodesRoom | Real-Time Collaborative Code Editor & Online Compiler</title>
   <meta name="description"
-    content="Collaborate on code in real-time, run programs in 15+ languages, format/minify JSON, and pair program with CodesRoom." />
+    content="CodesRoom is a free online collaborative code editor and IDE. Run and execute code instantly in 15+ programming languages, format JSON, and pair program in real-time." />
   <meta name="keywords"
-    content="collaborative coding, online compiler, live code editor, pair programming, codesroom, json formatter, www.codesroom.in" />
+    content="collaborative coding, online compiler, live code editor, pair programming, codesroom, json formatter, python online compiler, javascript editor" />
   <meta name="author" content="CodesRoom" />
 
-  <!-- Open Graph / Facebook -->
+  <!-- Open Graph / Facebook / LinkedIn -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="CodesRoom - Real-Time Collaborative Coding & Playgrounds" />
+  <meta property="og:title" content="CodesRoom | Real-Time Collaborative Code Editor & Online Compiler" />
   <meta property="og:description"
-    content="Collaborate on code in real-time, run programs in 15+ languages, format/minify JSON, and pair program with CodesRoom." />
-  <meta property="og:url" content="https://www.codesroom.in/" />
-  <meta property="og:image" content="https://www.codesroom.in/og-image.png" />
+    content="CodesRoom is a free online collaborative code editor and IDE. Run and execute code instantly in 15+ programming languages, format JSON, and pair program in real-time." />
+  <meta property="og:url" content="https://codesroom.in/" />
+  <meta property="og:image" content="https://codesroom.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="CodesRoom Collaborative Code Editor Preview" />
   <meta property="og:site_name" content="CodesRoom" />
+  <meta property="og:locale" content="en_US" />
 
-  <!-- Twitter Cards -->
+  <!-- Twitter / X Cards -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="CodesRoom - Real-Time Collaborative Coding & Playgrounds" />
+  <meta name="twitter:title" content="CodesRoom | Real-Time Collaborative Code Editor & Online Compiler" />
   <meta name="twitter:description"
-    content="Collaborate on code in real-time, run programs in 15+ languages, format/minify JSON, and pair program with CodesRoom." />
-  <meta name="twitter:url" content="https://www.codesroom.in/" />
-  <meta name="twitter:image" content="https://www.codesroom.in/og-image.png" />
+    content="CodesRoom is a free online collaborative code editor and IDE. Run and execute code instantly in 15+ programming languages, format JSON, and pair program in real-time." />
+  <meta name="twitter:url" content="https://codesroom.in/" />
+  <meta name="twitter:image" content="https://codesroom.in/og-image.png" />
+  <meta name="twitter:image:alt" content="CodesRoom Collaborative Code Editor Preview" />
 
   <!-- Structured Data (JSON-LD) for Search Engines -->
   <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "CodesRoom",
-        "url": "https://www.codesroom.in/",
-        "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "All",
-        "description": "A modern online IDE for real-time collaborative coding, instant code execution in 15+ languages, a JSON toolkit, and pair programming rooms.",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://codesroom.in/#website",
+          "url": "https://codesroom.in/",
+          "name": "CodesRoom",
+          "description": "Real-time collaborative code editor, multi-language compiler & developer tools.",
+          "publisher": {
+            "@id": "https://codesroom.in/#organization"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://codesroom.in/#organization",
+          "name": "CodesRoom",
+          "url": "https://codesroom.in/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://codesroom.in/logo.png"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://codesroom.in/#software",
+          "name": "CodesRoom",
+          "url": "https://codesroom.in/",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "All",
+          "description": "A modern online IDE for real-time collaborative coding, instant code execution in 15+ languages, a JSON toolkit, and pair programming rooms.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
         }
-      }
-    </script>
+      ]
+    }
+  </script>
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Semantic HTML crawler fallback (replaced upon React hydration) -->
+    <header style="padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+      <a href="/" style="font-size: 1.25rem; font-weight: 700; color: #ffffff; text-decoration: none;">CodesRoom</a>
+      <nav aria-label="Main Navigation">
+        <ul style="display: flex; gap: 20px; list-style: none; margin: 0; padding: 0;">
+          <li><a href="/online-compiler" style="color: #a1a1aa; text-decoration: none;">Online Compiler</a></li>
+          <li><a href="/web-pen" style="color: #a1a1aa; text-decoration: none;">Web Pen</a></li>
+          <li><a href="/json-formatter" style="color: #a1a1aa; text-decoration: none;">JSON Formatter</a></li>
+          <li><a href="/auth" style="color: #a1a1aa; text-decoration: none;">Sign In</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main style="max-width: 1100px; margin: 0 auto; padding: 48px 24px;">
+      <h1 style="font-size: 2.5rem; font-weight: 800; line-height: 1.2; margin-bottom: 16px;">
+        Code, Run, and Collaborate in Your Browser
+      </h1>
+      <p style="font-size: 1.15rem; color: #a1a1aa; max-width: 720px; line-height: 1.6; margin-bottom: 32px;">
+        CodesRoom is a free online collaborative IDE and developer workspace. Write, run, and execute code instantly in 15+ programming languages, build frontend prototypes with live preview, and format JSON seamlessly.
+      </p>
+      <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 40px;">
+        <article style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 24px;">
+          <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 8px;">
+            <a href="/online-compiler" style="color: #6366f1; text-decoration: none;">Online Code Compiler</a>
+          </h2>
+          <p style="color: #a1a1aa; line-height: 1.5; font-size: 0.95rem;">
+            Run code instantly in Python, JavaScript, TypeScript, C++, Java, Go, Rust, and more with zero local environment setup.
+          </p>
+        </article>
+        <article style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 24px;">
+          <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 8px;">
+            <a href="/web-pen" style="color: #6366f1; text-decoration: none;">Interactive Web Pen</a>
+          </h2>
+          <p style="color: #a1a1aa; line-height: 1.5; font-size: 0.95rem;">
+            Prototype frontend web designs with real-time live preview for HTML5, CSS3, and modern JavaScript with external CDN support.
+          </p>
+        </article>
+        <article style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 24px;">
+          <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 8px;">
+            <a href="/json-formatter" style="color: #6366f1; text-decoration: none;">JSON Formatter & Validator</a>
+          </h2>
+          <p style="color: #a1a1aa; line-height: 1.5; font-size: 0.95rem;">
+            Beautify, validate, minify, and parse JSON data. Convert seamlessly between JSON, YAML, and XML formats.
+          </p>
+        </article>
+      </section>
+    </main>
+    <footer style="padding: 24px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 60px; color: #71717a; font-size: 0.875rem;">
+      <p>&copy; 2026 CodesRoom. Built for developers worldwide.</p>
+    </footer>
+  </div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

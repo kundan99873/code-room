@@ -7,6 +7,7 @@ import BrandLogo from "@/components/common/brandLogo";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { resetPasswordRequest } from "@/api/auth";
 import { toast } from "react-hot-toast";
+import SEO from "@/components/seo";
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -50,6 +51,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-background px-4 py-10 overflow-hidden">
+      <SEO title="Reset Password" noindex={true} />
       {/* Ambient background */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 -left-40 h-112 w-md rounded-full bg-primary/20 blur-3xl" />

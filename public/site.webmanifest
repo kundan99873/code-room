@@ -1,0 +1,21 @@
+{
+  "name": "CodesRoom - Collaborative Code Editor & Compiler",
+  "short_name": "CodesRoom",
+  "description": "Collaborative code editor, online compiler for 15+ languages, web pen and JSON tools.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0c",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "/icon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}
