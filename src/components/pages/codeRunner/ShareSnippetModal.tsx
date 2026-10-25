@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { toast } from "react-hot-toast";
 import {
   Share2,
@@ -22,7 +22,7 @@ interface ShareSnippetModalProps {
   defaultTitle?: string;
 }
 
-export function ShareSnippetModal({
+export const ShareSnippetModal = memo(function ShareSnippetModal({
   isOpen,
   onClose,
   code,
@@ -286,4 +286,4 @@ export function ShareSnippetModal({
       </div>
     </div>
   );
-}
+});

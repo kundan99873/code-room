@@ -36,7 +36,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["auth-user"] });
       toast.success("Welcome back!");
-      navigate("/dashboard");
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get("redirect") || "/dashboard";
+      navigate(redirect);
     },
     onError: (err: any) => {
       toast.error(err.message || "Login failed");

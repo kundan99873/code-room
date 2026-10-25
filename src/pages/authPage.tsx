@@ -11,6 +11,11 @@ export default function AuthPage() {
 
   const google = () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get("redirect");
+    if (redirect) {
+      sessionStorage.setItem("codesroom_oauth_redirect", redirect);
+    }
     window.location.href = `${backendUrl}/api/auth/google`;
   };
 

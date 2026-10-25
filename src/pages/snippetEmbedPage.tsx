@@ -80,10 +80,15 @@ export default function SnippetEmbedPage() {
       {/* Editor view */}
       <div className="flex-1 min-h-0 bg-[#0e1015]">
         <Editor
+          key={snippet.shortId}
           height="100%"
           language={snippet.language === "cpp" ? "cpp" : snippet.language}
+          defaultValue={snippet.code}
           value={snippet.code}
           theme="vs-dark"
+          onMount={(editor) => {
+            setTimeout(() => editor.layout(), 50);
+          }}
           options={{
             fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             fontSize: 13,

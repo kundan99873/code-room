@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type OnMount } from "@monaco-editor/react";
 import {
   ResizablePanelGroup, ResizablePanel, ResizableHandle,
@@ -17,6 +17,8 @@ import { OutputPanel } from "./outputPanel";
 import { RunnerToolbar } from "./runnerToolbar";
 import { CodeToImageModal } from "./CodeToImageModal";
 import { ShareSnippetModal } from "./ShareSnippetModal";
+import { LoginRequiredModal } from "./LoginRequiredModal";
+import { useAuth } from "@/context/authContext";
 
 type Props = {
   value: string;
@@ -40,16 +42,19 @@ export function CodeRunner({
   const [lines, setLines] = useState<OutLine[]>([]);
   const [running, setRunning] = useState(false);
   const [execMs, setExecMs] = useState<number | null>(null);
-  const [previewSrc, setPreviewSrc] = useState<string>("");
   const [endpoint, setEndpointState] = useState<string>(() => getPistonEndpoint());
   const [fullEditor, setFullEditor] = useState(false);
   const [fullOutput, setFullOutput] = useState(false);
+  const { user } = useAuth();
   const [showImageModal, setShowImageModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
   const codeRef = useRef(value);
-  codeRef.current = value;
+  useEffect(() => {
+    codeRef.current = value;
+  }, [value]);
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const startedAt = useRef<number>(0);
   const editorRef = useRef<any>(null);
@@ -59,12 +64,17 @@ export function CodeRunner({
   const [tsMode, setTsModeState] = useState(() => getLanguageRunMode("typescript"));
   const [pyMode, setPyModeState] = useState(() => getLanguageRunMode("python"));
 
-  const handleModeChange = (langId: string, newMode: "browser" | "server") => {
+  const handleModeChange = useCallback((langId: string, newMode: "browser" | "server") => {
     setLanguageRunMode(langId, newMode);
     if (langId === "javascript") setJsModeState(newMode);
     if (langId === "typescript") setTsModeState(newMode);
     if (langId === "python") setPyModeState(newMode);
-  };
+  }, []);
+
+  const handleEndpointChange = useCallback((v: string) => {
+    setPistonEndpoint(v);
+    setEndpointState(v);
+  }, []);
 
   const lang = LANG_BY_ID[language];
   const mode = useMemo(() => {
@@ -75,36 +85,94 @@ export function CodeRunner({
     if (language === "python" || language === "py") return pyMode;
     return lang.runMode;
   }, [language, lang, jsMode, tsMode, pyMode]);
-  const monacoLang = language === "cpp" ? "cpp" : language;
 
-  const append = (l: OutLine) => setLines((p) => [...p, l]);
+  const monacoLang = useMemo(() => (language === "cpp" ? "cpp" : language), [language]);
 
+  const [previewSrc, setPreviewSrc] = useState<string>(() => (mode === "web" ? value : ""));
+
+  // Debounce refs for typing without React re-render cascades
+  const webDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const jsonDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  const append = useCallback((l: OutLine) => {
+    setLines((p) => [...p, l]);
+  }, []);
+
+  // When language or mode changes, initialize preview or plaintext/json lines once
   useEffect(() => {
-    if (mode !== "web") return;
-    const t = setTimeout(() => setPreviewSrc(value), 300);
-    return () => clearTimeout(t);
-  }, [value, mode]);
-
-  useEffect(() => {
-    if (language === "plaintext") {
-      setLines([{ level: "log", text: value }]);
+    if (mode === "web") {
+      setPreviewSrc(codeRef.current);
+    } else if (language === "plaintext") {
+      setLines([{ level: "log", text: codeRef.current }]);
     } else if (language === "json") {
-      if (!value.trim()) {
+      const current = codeRef.current.trim();
+      if (!current) {
         setLines([]);
         return;
       }
       try {
-        JSON.parse(value);
-        setLines([{ level: "log", text: value }]);
+        JSON.parse(current);
+        setLines([{ level: "log", text: codeRef.current }]);
       } catch (e: any) {
         setLines([
           { level: "error", text: `Invalid JSON: ${e.message}` },
-          { level: "log", text: value },
+          { level: "log", text: codeRef.current },
         ]);
       }
     }
-  }, [value, language]);
+  }, [language, mode]);
 
+  // Clean typing change handler: keeps codeRef instant, debounces heavy preview & parsing
+  const handleCodeChange = useCallback((v: string) => {
+    codeRef.current = v;
+    onChange?.(v);
+
+    if (mode === "web") {
+      if (webDebounceRef.current) clearTimeout(webDebounceRef.current);
+      webDebounceRef.current = setTimeout(() => {
+        setPreviewSrc(v);
+      }, 300);
+    } else if (language === "plaintext" || language === "json") {
+      if (jsonDebounceRef.current) clearTimeout(jsonDebounceRef.current);
+      jsonDebounceRef.current = setTimeout(() => {
+        if (language === "plaintext") {
+          setLines([{ level: "log", text: v }]);
+        } else if (language === "json") {
+          if (!v.trim()) {
+            setLines([]);
+            return;
+          }
+          try {
+            JSON.parse(v);
+            setLines([{ level: "log", text: v }]);
+          } catch (e: any) {
+            setLines([
+              { level: "error", text: `Invalid JSON: ${e.message}` },
+              { level: "log", text: v },
+            ]);
+          }
+        }
+      }, 350);
+    }
+  }, [onChange, mode, language]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (webDebounceRef.current) clearTimeout(webDebounceRef.current);
+      if (jsonDebounceRef.current) clearTimeout(jsonDebounceRef.current);
+    };
+  }, []);
+
+  // Auto-open Share modal when returning from login
+  useEffect(() => {
+    if (user && sessionStorage.getItem("codesroom_auto_share") === "true") {
+      sessionStorage.removeItem("codesroom_auto_share");
+      setShowShareModal(true);
+    }
+  }, [user]);
+
+  // Listen to browser sandbox messages
   useEffect(() => {
     if (mode !== "browser") return;
     const onMsg = (e: MessageEvent) => {
@@ -120,18 +188,9 @@ export function CodeRunner({
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
-  }, [mode]);
+  }, [mode, append]);
 
-  useEffect(() => {
-    if (!fullEditor && !fullOutput) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setFullEditor(false); setFullOutput(false); }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [fullEditor, fullOutput]);
-
-  const run = async () => {
+  const run = useCallback(async () => {
     setLines([]);
     setExecMs(null);
     startedAt.current = performance.now();
@@ -186,14 +245,14 @@ export function CodeRunner({
       }
       return;
     }
-  };
+  }, [mode, language, allFiles, activeFileName, append]);
 
-  const copy = async () => {
+  const copy = useCallback(async () => {
     await navigator.clipboard.writeText(codeRef.current);
     toast.success("Code copied to clipboard");
-  };
+  }, []);
 
-  const download = () => {
+  const download = useCallback(() => {
     const blob = new Blob([codeRef.current], { type: "text/plain" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -201,30 +260,37 @@ export function CodeRunner({
     a.click();
     URL.revokeObjectURL(a.href);
     toast.success(`Downloaded main.${lang?.ext}`);
-  };
+  }, [lang?.ext]);
 
   const runRef = useRef(run);
   runRef.current = run;
   const downloadRef = useRef(download);
   downloadRef.current = download;
 
-  // Keyboard shortcuts: Cmd/Ctrl + Enter to run, Cmd/Ctrl + S to download
+  // Single unified keyboard shortcut listener
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setFullEditor(false);
+        setFullOutput(false);
+        return;
+      }
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
         runRef.current();
+        return;
       }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
         downloadRef.current();
+        return;
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const handleEditorMount: OnMount = (editor, monaco) => {
+  const handleEditorMount: OnMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
     onEditorMount?.(editor, monaco);
@@ -237,9 +303,9 @@ export function CodeRunner({
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       downloadRef.current();
     });
-  };
+  }, [onEditorMount]);
 
-  const format = () => {
+  const format = useCallback(() => {
     if (editorRef.current) {
       const formatAction = editorRef.current.getAction("editor.action.formatDocument");
       if (formatAction) {
@@ -252,18 +318,34 @@ export function CodeRunner({
     } else {
       toast.error("Editor not initialized");
     }
-  };
+  }, []);
 
-  const copyOutput = async () => {
+  const copyOutput = useCallback(async () => {
     await navigator.clipboard.writeText(lines.map((l) => l.text).join("\n"));
     toast.success("Output copied");
-  };
+  }, [lines]);
 
-  const onClear = () => {
+  const onClear = useCallback(() => {
     setLines([]);
     setExecMs(null);
     if (mode === "web") setPreviewSrc("");
-  };
+  }, [mode]);
+
+  const toggleFullEditor = useCallback(() => setFullEditor((f) => !f), []);
+  const toggleFullOutput = useCallback(() => setFullOutput((f) => !f), []);
+
+  const openShareModal = useCallback(() => {
+    if (!user) {
+      setShowLoginModal(true);
+    } else {
+      setShowShareModal(true);
+    }
+  }, [user]);
+
+  const closeShareModal = useCallback(() => setShowShareModal(false), []);
+  const openImageModal = useCallback(() => setShowImageModal(true), []);
+  const closeImageModal = useCallback(() => setShowImageModal(false), []);
+  const closeLoginModal = useCallback(() => setShowLoginModal(false), []);
 
   const placeholder = useMemo(() => {
     if (language === "plaintext") return "Type text in the editor to see it here.";
@@ -272,29 +354,46 @@ export function CodeRunner({
     return "Press ▶ Run (or ⌘/Ctrl + Enter) to see the output here.";
   }, [mode, language]);
 
-  const editorPanel = (
+  const editorPanel = useMemo(() => (
     <EditorPanel
       value={value}
       language={language}
       monacoLang={monacoLang}
       ext={lang?.ext ?? "txt"}
       mode={mode}
-      mounted={mounted}
+      mounted={true}
       isFull={fullEditor}
-      onToggleFull={() => setFullEditor((f) => !f)}
-      onChange={onChange}
+      onToggleFull={toggleFullEditor}
+      onChange={handleCodeChange}
       onEditorMount={handleEditorMount}
       onFormat={format}
       onCopy={copy}
       onDownload={download}
-      onShareSnippet={() => setShowShareModal(true)}
-      onExportImage={() => setShowImageModal(true)}
+      onShareSnippet={openShareModal}
+      onExportImage={openImageModal}
       fileName={activeFileName}
       readOnly={readOnly}
     />
-  );
+  ), [
+    value,
+    language,
+    monacoLang,
+    lang?.ext,
+    mode,
+    fullEditor,
+    toggleFullEditor,
+    handleCodeChange,
+    handleEditorMount,
+    format,
+    copy,
+    download,
+    openShareModal,
+    openImageModal,
+    activeFileName,
+    readOnly,
+  ]);
 
-  const outputPanel = (
+  const outputPanel = useMemo(() => (
     <OutputPanel
       ref={iframeRef}
       mode={mode}
@@ -302,14 +401,24 @@ export function CodeRunner({
       running={running}
       execMs={execMs}
       previewSrc={previewSrc}
-      value={value}
       placeholder={placeholder}
       isFull={fullOutput}
-      onToggleFull={() => setFullOutput((f) => !f)}
+      onToggleFull={toggleFullOutput}
       onClear={onClear}
       onCopyOutput={copyOutput}
     />
-  );
+  ), [
+    mode,
+    lines,
+    running,
+    execMs,
+    previewSrc,
+    placeholder,
+    fullOutput,
+    toggleFullOutput,
+    onClear,
+    copyOutput,
+  ]);
 
   if (fullEditor) return <div className="fixed inset-0 z-50 bg-background">{editorPanel}</div>;
   if (fullOutput) return <div className="fixed inset-0 z-50 bg-background">{outputPanel}</div>;
@@ -323,7 +432,7 @@ export function CodeRunner({
         language={language}
         onLanguageChange={onLanguageChange}
         endpoint={endpoint}
-        onEndpointChange={(v) => { setPistonEndpoint(v); setEndpointState(v); }}
+        onEndpointChange={handleEndpointChange}
         running={running}
         runnable={runnable}
         mode={mode}
@@ -359,19 +468,27 @@ export function CodeRunner({
       {/* Code to Image Exporter Modal */}
       <CodeToImageModal
         isOpen={showImageModal}
-        onClose={() => setShowImageModal(false)}
+        onClose={closeImageModal}
         code={codeRef.current}
         language={language}
         filename={activeFileName || `main.${lang?.ext ?? "js"}`}
       />
 
-      {/* Share Snippet Modal */}
+      {/* Share Snippet Modal (For Authenticated Users) */}
       <ShareSnippetModal
         isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
+        onClose={closeShareModal}
         code={codeRef.current}
         language={language}
         defaultTitle={activeFileName || `${language} snippet`}
+      />
+
+      {/* Login Required Modal (When guest clicks share) */}
+      <LoginRequiredModal
+        isOpen={showLoginModal}
+        onClose={closeLoginModal}
+        code={codeRef.current}
+        language={language}
       />
     </div>
   );

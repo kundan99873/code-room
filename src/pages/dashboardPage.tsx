@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +48,14 @@ type SortType = "recent" | "name" | "language";
 export default function Dashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const oauthRedirect = sessionStorage.getItem("codesroom_oauth_redirect");
+        if (oauthRedirect) {
+            sessionStorage.removeItem("codesroom_oauth_redirect");
+            navigate(oauthRedirect);
+        }
+    }, [navigate]);
     const queryClient = useQueryClient();
 
     // Tab view state

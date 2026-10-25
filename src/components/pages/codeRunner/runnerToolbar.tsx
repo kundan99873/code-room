@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Play, RefreshCw } from "lucide-react";
 import { LanguageSelect } from "./languageSelect";
@@ -19,7 +20,7 @@ type Props = {
   onModeChange: (langId: string, mode: "browser" | "server") => void;
 };
 
-export function RunnerToolbar({
+export const RunnerToolbar = memo(function RunnerToolbar({
   header,
   language,
   onLanguageChange,

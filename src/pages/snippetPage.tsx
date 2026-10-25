@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { toast } from "react-hot-toast";
@@ -51,21 +51,21 @@ export default function SnippetPage() {
       });
   }, [id]);
 
-  const handleCopyCode = async () => {
+  const handleCopyCode = useCallback(async () => {
     if (!snippet) return;
     await navigator.clipboard.writeText(snippet.code);
     toast.success("Code copied to clipboard!");
-  };
+  }, [snippet]);
 
-  const handleRunInCompiler = () => {
+  const handleRunInCompiler = useCallback(() => {
     if (!snippet) return;
     // Pass snippet code and language via sessionStorage or query state
     sessionStorage.setItem("codesroom_preload_code", snippet.code);
     sessionStorage.setItem("codesroom_preload_lang", snippet.language);
     navigate(`/online-compiler?fromSnippet=${snippet.shortId}`);
-  };
+  }, [snippet, navigate]);
 
-  const handleFork = async () => {
+  const handleFork = useCallback(async () => {
     if (!snippet) return;
     setForking(true);
     try {
@@ -77,7 +77,16 @@ export default function SnippetPage() {
     } finally {
       setForking(false);
     }
-  };
+  }, [snippet, navigate]);
+
+  const formattedDate = useMemo(() => {
+    if (!snippet) return "";
+    return new Date(snippet.createdAt).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }, [snippet?.createdAt]);
 
   if (loading) {
     return (
@@ -113,12 +122,6 @@ export default function SnippetPage() {
       </div>
     );
   }
-
-  const formattedDate = new Date(snippet.createdAt).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -260,12 +263,17 @@ export default function SnippetPage() {
             </div>
           </div>
 
-          <div className="flex-1 min-h-[500px]">
+          <div className="h-[600px] w-full">
             <Editor
+              key={snippet.shortId}
               height="100%"
               language={snippet.language === "cpp" ? "cpp" : snippet.language}
+              defaultValue={snippet.code}
               value={snippet.code}
               theme={resolved === "dark" ? "vs-dark" : "vs-light"}
+              onMount={(editor) => {
+                setTimeout(() => editor.layout(), 50);
+              }}
               options={{
                 fontFamily: "'JetBrains Mono', ui-monospace, monospace",
                 fontSize: 14,

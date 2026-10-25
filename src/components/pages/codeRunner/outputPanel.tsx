@@ -1,4 +1,4 @@
-import { forwardRef, useState, useMemo } from "react";
+import { forwardRef, useState, useMemo, memo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Copy, Eraser, Maximize2, Minimize2, Terminal,
@@ -13,7 +13,7 @@ type Props = {
   running: boolean;
   execMs: number | null;
   previewSrc: string;
-  value: string;
+  value?: string;
   placeholder: string;
   isFull: boolean;
   onToggleFull: () => void;
@@ -139,8 +139,8 @@ function tryParseJson(text: string): any {
   return null;
 }
 
-export const OutputPanel = forwardRef<HTMLIFrameElement, Props>(function OutputPanel(
-  { mode, lines, running, execMs, previewSrc, value, placeholder, isFull, onToggleFull, onClear, onCopyOutput },
+export const OutputPanel = memo(forwardRef<HTMLIFrameElement, Props>(function OutputPanel(
+  { mode, lines, running, execMs, previewSrc, placeholder, isFull, onToggleFull, onClear, onCopyOutput },
   iframeRef,
 ) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -163,9 +163,19 @@ export const OutputPanel = forwardRef<HTMLIFrameElement, Props>(function OutputP
     });
   }, [lines, selectedLevel, searchQuery]);
 
-  const outputLength = lines.map((l) => l.text).join("\n").length;
-  const estimatedKb = (outputLength / 1024).toFixed(2);
-  const hasErrors = lines.some((l) => l.level === "error");
+  const { outputLength, estimatedKb, hasErrors } = useMemo(() => {
+    let len = 0;
+    let err = false;
+    for (let i = 0; i < lines.length; i++) {
+      len += lines[i].text.length + 1;
+      if (lines[i].level === "error") err = true;
+    }
+    return {
+      outputLength: len,
+      estimatedKb: (len / 1024).toFixed(2),
+      hasErrors: err,
+    };
+  }, [lines]);
 
   const getEngineLabel = () => {
     if (mode === "browser") return "Browser Sandbox";
@@ -341,4 +351,4 @@ export const OutputPanel = forwardRef<HTMLIFrameElement, Props>(function OutputP
       )}
     </div>
   );
-});
+}));

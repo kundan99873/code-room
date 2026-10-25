@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Editor, { type OnMount } from "@monaco-editor/react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context/themeContext";
@@ -26,7 +27,7 @@ type Props = {
   readOnly?: boolean;
 };
 
-export function EditorPanel({
+export const EditorPanel = memo(function EditorPanel({
   value, language, monacoLang, ext, mode, mounted, isFull,
   onToggleFull, onChange, onEditorMount, onFormat, onCopy, onDownload,
   onShareSnippet, onExportImage,

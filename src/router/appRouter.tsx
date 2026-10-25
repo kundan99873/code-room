@@ -82,7 +82,9 @@ function GuestRoute() {
   }
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get("redirect") || "/dashboard";
+    return <Navigate to={redirect} replace />;
   }
 
   return <Outlet />;

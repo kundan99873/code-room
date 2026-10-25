@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, memo } from "react";
 import { toPng, toBlob } from "html-to-image";
 import { toast } from "react-hot-toast";
 import {
@@ -70,7 +70,7 @@ const FONT_SIZES = [
   { label: "Large", value: 16 },
 ];
 
-export function CodeToImageModal({
+export const CodeToImageModal = memo(function CodeToImageModal({
   isOpen,
   onClose,
   code,
@@ -90,9 +90,9 @@ export function CodeToImageModal({
 
   const cardRef = useRef<HTMLDivElement>(null);
 
-  if (!isOpen) return null;
+  const lines = useMemo(() => (isOpen ? code.split("\n") : []), [isOpen, code]);
 
-  const lines = code.split("\n");
+  if (!isOpen) return null;
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
@@ -425,4 +425,4 @@ export function CodeToImageModal({
       </div>
     </div>
   );
-}
+});
