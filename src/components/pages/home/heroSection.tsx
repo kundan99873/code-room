@@ -90,6 +90,7 @@ room.on("edit", (op) => {
           >
             <Link
               to="/online-compiler"
+              to="/online-compiler"
               className="group inline-flex items-center gap-2 rounded-lg bg-primary text-primary-foreground font-medium px-6 py-3 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition"
             >
               <Play className="h-4 w-4" /> Online Compiler
