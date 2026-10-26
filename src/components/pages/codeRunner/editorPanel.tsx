@@ -126,4 +126,4 @@ export const EditorPanel = memo(function EditorPanel({
       </div>
     </div>
   );
-}
+});

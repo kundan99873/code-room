@@ -12,11 +12,13 @@ export default function AuthPage() {
   const google = () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
     const params = new URLSearchParams(window.location.search);
-    const redirect = params.get("redirect");
-    if (redirect) {
-      sessionStorage.setItem("codesroom_oauth_redirect", redirect);
-    }
-    window.location.href = `${backendUrl}/api/auth/google`;
+    const redirect = params.get("redirect") || sessionStorage.getItem("codesroom_oauth_redirect") || "/dashboard";
+    sessionStorage.setItem("codesroom_oauth_redirect", redirect);
+
+    const googleAuthUrl = new URL(`${backendUrl}/api/auth/google`);
+    googleAuthUrl.searchParams.set("redirect", redirect);
+    googleAuthUrl.searchParams.set("origin", window.location.origin);
+    window.location.href = googleAuthUrl.toString();
   };
 
   const isSignin = mode === "signin";

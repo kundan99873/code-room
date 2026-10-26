@@ -83,7 +83,13 @@ function GuestRoute() {
 
   if (user) {
     const params = new URLSearchParams(window.location.search);
-    const redirect = params.get("redirect") || "/dashboard";
+    const redirect =
+      params.get("redirect") ||
+      (typeof window !== "undefined" ? sessionStorage.getItem("codesroom_oauth_redirect") : null) ||
+      "/dashboard";
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("codesroom_oauth_redirect");
+    }
     return <Navigate to={redirect} replace />;
   }
 

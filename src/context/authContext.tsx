@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: user = null, isLoading } = useQuery<User | null>({
     queryKey: ["auth-user"],
     queryFn: fetchCurrentUser,
-    retry: false,
+    retry: 1,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -37,8 +37,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await queryClient.invalidateQueries({ queryKey: ["auth-user"] });
       toast.success("Welcome back!");
       const params = new URLSearchParams(window.location.search);
-      const redirect = params.get("redirect") || "/dashboard";
-      navigate(redirect);
+      const redirect = params.get("redirect") || sessionStorage.getItem("codesroom_oauth_redirect") || "/dashboard";
+      sessionStorage.removeItem("codesroom_oauth_redirect");
+      navigate(redirect, { replace: true });
     },
     onError: (err: any) => {
       toast.error(err.message || "Login failed");

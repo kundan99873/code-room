@@ -91,8 +91,8 @@ export function CodeRunner({
   const [previewSrc, setPreviewSrc] = useState<string>(() => (mode === "web" ? value : ""));
 
   // Debounce refs for typing without React re-render cascades
-  const webDebounceRef = useRef<NodeJS.Timeout | null>(null);
-  const jsonDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const webDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const jsonDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const append = useCallback((l: OutLine) => {
     setLines((p) => [...p, l]);

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/lib/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { StatCard } from "@/components/pages/dashboard/statCard";
 import { RoomCard } from "@/components/pages/dashboard/roomCard";
 import { EmptyState } from "@/components/pages/dashboard/emptyState";
@@ -46,16 +46,14 @@ type FilterType = "all" | "public" | "private" | "mine";
 type SortType = "recent" | "name" | "language";
 
 export default function Dashboard() {
+    const oauthRedirect = typeof window !== "undefined" ? sessionStorage.getItem("codesroom_oauth_redirect") : null;
+    if (oauthRedirect) {
+        sessionStorage.removeItem("codesroom_oauth_redirect");
+        return <Navigate to={oauthRedirect} replace />;
+    }
+
     const { user } = useAuth();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const oauthRedirect = sessionStorage.getItem("codesroom_oauth_redirect");
-        if (oauthRedirect) {
-            sessionStorage.removeItem("codesroom_oauth_redirect");
-            navigate(oauthRedirect);
-        }
-    }, [navigate]);
     const queryClient = useQueryClient();
 
     // Tab view state

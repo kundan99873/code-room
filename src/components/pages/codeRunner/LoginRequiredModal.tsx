@@ -26,8 +26,11 @@ export const LoginRequiredModal = memo(function LoginRequiredModal({
     sessionStorage.setItem("codesroom_preload_lang", language);
     sessionStorage.setItem("codesroom_auto_share", "true");
 
+    const returnUrl = window.location.pathname + window.location.search || "/online-compiler";
+    sessionStorage.setItem("codesroom_oauth_redirect", returnUrl);
+
     // Redirect to auth page with return parameter
-    navigate("/auth?redirect=/online-compiler");
+    navigate(`/auth?redirect=${encodeURIComponent(returnUrl)}`);
   };
 
   return (

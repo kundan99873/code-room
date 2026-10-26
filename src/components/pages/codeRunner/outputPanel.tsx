@@ -140,7 +140,7 @@ function tryParseJson(text: string): any {
 }
 
 export const OutputPanel = memo(forwardRef<HTMLIFrameElement, Props>(function OutputPanel(
-  { mode, lines, running, execMs, previewSrc, placeholder, isFull, onToggleFull, onClear, onCopyOutput },
+  { mode, lines, running, execMs, previewSrc, value, placeholder, isFull, onToggleFull, onClear, onCopyOutput },
   iframeRef,
 ) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -163,7 +163,7 @@ export const OutputPanel = memo(forwardRef<HTMLIFrameElement, Props>(function Ou
     });
   }, [lines, selectedLevel, searchQuery]);
 
-  const { outputLength, estimatedKb, hasErrors } = useMemo(() => {
+  const { estimatedKb, hasErrors } = useMemo(() => {
     let len = 0;
     let err = false;
     for (let i = 0; i < lines.length; i++) {
@@ -171,7 +171,6 @@ export const OutputPanel = memo(forwardRef<HTMLIFrameElement, Props>(function Ou
       if (lines[i].level === "error") err = true;
     }
     return {
-      outputLength: len,
       estimatedKb: (len / 1024).toFixed(2),
       hasErrors: err,
     };
