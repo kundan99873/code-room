@@ -38,6 +38,12 @@ const ROUTES_SEO = [
     title: 'Login & Sign Up | CodesRoom Workspace',
     description: 'Log in or create a CodesRoom account to save your code playgrounds, manage real-time collaborative coding rooms, and pair program with your team.',
     keywords: 'codesroom login, codesroom sign up, codesroom authentication'
+  },
+  {
+    path: '/privacy-policy',
+    title: 'Privacy Policy | CodesRoom',
+    description: 'Read the CodesRoom Privacy Policy. Learn how we safeguard your source code, personal data, real-time collaboration sessions, and developer workspace security.',
+    keywords: 'CodesRoom privacy policy, developer privacy, code security, sandbox privacy, data protection, privacy policy codesroom'
   }
 ];
 

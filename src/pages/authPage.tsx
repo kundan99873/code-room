@@ -5,6 +5,7 @@ import BrandLogo from "@/components/common/brandLogo";
 import SignUpForm from "@/components/pages/auth/signUpForm";
 import ForgotPasswordForm from "@/components/pages/auth/forgotPasswordForm";
 import SEO from "@/components/seo";
+import { Link } from "react-router-dom";
 
 export default function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
@@ -131,7 +132,11 @@ export default function AuthPage() {
         </div>
 
         <p className="mt-5 text-center text-xs text-muted-foreground">
-          By continuing, you agree to our Terms & Privacy Policy.
+          By continuing, you agree to our{" "}
+          <Link to="/privacy-policy" className="underline hover:text-foreground">
+            Privacy Policy
+          </Link>
+          .
         </p>
       </div>
     </div>

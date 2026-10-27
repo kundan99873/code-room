@@ -57,6 +57,7 @@ const RoomPage = Loadable(lazy(() => import("@/pages/roomPage")));
 const ResetPasswordPage = Loadable(lazy(() => import("@/pages/resetPasswordPage")));
 const SnippetPage = Loadable(lazy(() => import("@/pages/snippetPage")));
 const SnippetEmbedPage = Loadable(lazy(() => import("@/pages/snippetEmbedPage")));
+const PrivacyPolicyPage = Loadable(lazy(() => import("@/pages/privacyPolicyPage")));
 
 // Protected Route Guard
 function ProtectedRoute() {
@@ -116,6 +117,10 @@ const router = createBrowserRouter([
         path: "/web-pen",
         element: <PenPage />,
       },
+      {
+        path: "/privacy-policy",
+        element: <PrivacyPolicyPage />,
+      },
       // Public Shareable Code Snippet Routes
       {
         path: "/s/:id",
@@ -137,6 +142,10 @@ const router = createBrowserRouter([
       {
         path: "/pen",
         element: <Navigate to="/web-pen" replace />,
+      },
+      {
+        path: "/privacy",
+        element: <Navigate to="/privacy-policy" replace />,
       },
       // Guest-only routes
       {

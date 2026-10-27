@@ -34,6 +34,9 @@ export default function Footer() {
               Sign in
             </Link>
           )}
+          <Link to="/privacy-policy" className="hover:text-foreground">
+            Privacy Policy
+          </Link>
           {/* <a
             href="https://github.com"
             target="_blank"
